@@ -7,7 +7,7 @@ import { MaterialItem } from '@/api/hooks/materials/use-material-categories';
 import MaterialItemDrawer from './components/material-item-drawer/material-item-drawer';
 import MaterialsTable from './components/materials-table/materials-table';
 
-export default function CategoryView() {
+export default function Category() {
   const { categoryId } = useParams<{ categoryId: string }>();
   const { data: categories = [] } = useMaterialCategories();
   const updateItem = useMaterialCategoriesItemUpdate();

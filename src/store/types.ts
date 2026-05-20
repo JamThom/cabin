@@ -1,31 +1,17 @@
 export type Status = 'to-do' | 'in-progress' | 'blocked' | 'completed';
 
-export interface SubTask {
-  id: string;
-  name: string;
-  status: Status;
-  costEst: string;
-}
-
 export interface Task {
   id: string;
   name: string;
   status: Status;
   costEst: string;
-  subtasks: SubTask[];
+  blockedBy?: string;
 }
 
 export interface Phase {
   id: string;
   name: string;
   tasks: Task[];
-}
-
-export interface DrawerItem {
-  type: 'task' | 'subtask';
-  phaseId: string;
-  taskId: string;
-  subtaskId?: string;
 }
 
 export interface DocumentFile {

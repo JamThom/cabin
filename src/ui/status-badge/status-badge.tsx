@@ -4,12 +4,13 @@ import { Status } from '../../store/types';
 
 interface StatusBadgeProps {
   status: Status;
+  blockedBy?: string;
 }
 
-export default function StatusBadge({ status }: StatusBadgeProps) {
+export default function StatusBadge({ status, blockedBy }: StatusBadgeProps) {
   return (
     <Badge colorPalette={statusColour[status]} variant="subtle" textTransform="capitalize">
-      {status}
+      {status === 'blocked' && blockedBy ? blockedBy : status}
     </Badge>
   );
 }
