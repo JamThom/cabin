@@ -12,6 +12,26 @@ function formatMoney(value: number) {
   return `${value.toFixed(2)}`;
 }
 
+function UrlCell({ url }: { url: string }) {
+  if (!url) return null;
+  let valid = false;
+  let display = url;
+  try {
+    const parsed = new URL(url);
+    valid = parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    display = parsed.hostname;
+  } catch { /* not a valid URL */ }
+  if (!valid) return <span>{url}</span>;
+  return (
+    <a href={url} style={{
+      color: 'blue',
+      textDecoration: 'underline'
+    }} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
+      {display}
+    </a>
+  );
+}
+
 export default function MaterialsTable({ items, onRowClick }: MaterialsTableProps) {
   const data = useMemo(() => items, [items]);
 
@@ -22,7 +42,7 @@ export default function MaterialsTable({ items, onRowClick }: MaterialsTableProp
       {
         accessorKey: 'url',
         header: 'URL',
-        cell: ({ row }) => <a href={row.original.url} target="_blank" rel="noreferrer">{row.original.url}</a>
+        cell: ({ row }) => <UrlCell url={row.original.url} />
       },
       { accessorKey: 'cost', header: 'Cost', cell: ({ row }) => formatMoney(row.original.cost) },
       { accessorKey: 'unit', header: 'Unit', cell: ({ row }) => row.original.unit },
@@ -30,6 +50,7 @@ export default function MaterialsTable({ items, onRowClick }: MaterialsTableProp
       {
         id: 'totalCost',
         header: 'Total Cost',
+        accessorFn: (row) => row.cost * row.quantity,
         cell: ({ row }) => formatMoney(row.original.cost * row.original.quantity)
       }
     ],

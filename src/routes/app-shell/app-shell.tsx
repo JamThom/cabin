@@ -1,14 +1,14 @@
-import { Box, Flex } from '@chakra-ui/react';
+import { Box, Flex, Stack } from '@chakra-ui/react';
 import { Outlet } from 'react-router-dom';
 import SideNav from './components/side-nav/side-nav';
 
 export default function AppShell() {
   return (
-    <Flex minH="100vh">
+    <Flex h="100vh">
       <SideNav />
-      <Box flex="1">
+      <Stack flex="1">
         <Outlet />
-      </Box>
+      </Stack>
     </Flex>
   );
 }

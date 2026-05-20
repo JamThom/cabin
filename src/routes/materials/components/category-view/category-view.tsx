@@ -19,7 +19,7 @@ export default function Category() {
   if (!category) return <Box textAlign="center" color="gray.400" py={16}>Category not found. Select a category above.</Box>;
 
   return (
-    <Box borderWidth="1px" borderRadius="lg" overflow="hidden">
+    <Box borderWidth="1px" borderRadius="lg" overflow="auto" maxH="calc(100vh - 260px)">
       <MaterialsTable items={category.items} onRowClick={(item) => setSelectedItem(item)} />
       <MaterialItemDrawer
         item={selectedItem}
