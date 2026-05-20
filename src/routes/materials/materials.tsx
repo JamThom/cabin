@@ -10,6 +10,7 @@ import PageLayout from '@/ui/page-layout/page-layout';
 import PageHeader from '@/ui/page-header/page-header';
 import RouteTabs from '@/ui/route-tabs/route-tabs';
 import UiExtrasMenu from '@/ui/extras-menu/extras-menu';
+import useUiToast from '@/ui/toast/use-ui-toast';
 
 function formatMoney(value: number) {
   return `${value.toFixed(2)}`;
@@ -25,16 +26,15 @@ export default function Materials() {
   const { categoryId } = useParams<{ categoryId: string }>();
   const activeCategoryId = categoryId ?? categories[0]?.id;
   const activeCategory = categories.find((c) => c.id === activeCategoryId);
+  const { showSuccessToast } = useUiToast();
 
-  function handleDeleteCategory() {
+  async function handleDeleteCategory() {
     if (!activeCategoryId) return;
-    deleteCategory.mutate({ categoryId: activeCategoryId }, {
-      onSuccess: () => {
-        const remaining = categories.filter((c) => c.id !== activeCategoryId);
-        if (remaining.length > 0) navigate(`/materials/category/${remaining[0].id}`);
-        else navigate('/materials');
-      }
-    });
+    await deleteCategory.mutateAsync({ categoryId: activeCategoryId });
+    showSuccessToast('Category deleted');
+    const remaining = categories.filter((c) => c.id !== activeCategoryId);
+    if (remaining.length > 0) navigate(`/materials/category/${remaining[0].id}`);
+    else navigate('/materials');
   }
 
   return (
@@ -44,7 +44,11 @@ export default function Materials() {
         action={
           <UiButton
             size="sm"
-            onClick={() => activeCategoryId && addItem.mutate({ categoryId: activeCategoryId })}
+            onClick={async () => {
+              if (!activeCategoryId) return;
+              await addItem.mutateAsync({ categoryId: activeCategoryId });
+              showSuccessToast('Material created');
+            }}
             disabled={!activeCategoryId}
           >
             New Material
@@ -59,12 +63,22 @@ export default function Materials() {
             options={[
               {
                 label: 'Add Category',
-                prompt: { title: 'Add Category', placeholder: 'Category name', confirmLabel: 'Add', onConfirm: (name) => createCategory.mutate({ name }) }
+                prompt: {
+                  title: 'Add Category',
+                  placeholder: 'Category name',
+                  confirmLabel: 'Add',
+                  onConfirm: async (name) => { await createCategory.mutateAsync({ name }); showSuccessToast('Category added'); }
+                }
               },
               {
                 label: 'Rename Category',
                 disabled: !activeCategory,
-                prompt: { title: 'Rename Category', initialValue: activeCategory?.name, confirmLabel: 'Rename', onConfirm: (name) => activeCategoryId && updateCategory.mutate({ categoryId: activeCategoryId, name }) }
+                prompt: {
+                  title: 'Rename Category',
+                  initialValue: activeCategory?.name,
+                  confirmLabel: 'Rename',
+                  onConfirm: async (name) => { if (!activeCategoryId) return; await updateCategory.mutateAsync({ categoryId: activeCategoryId, name }); showSuccessToast('Category renamed'); }
+                }
               },
               {
                 label: 'Delete Category',

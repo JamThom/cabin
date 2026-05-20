@@ -9,7 +9,7 @@ interface MenuOptionPrompt {
   placeholder?: string;
   initialValue?: string;
   confirmLabel?: string;
-  onConfirm: (value: string) => void;
+  onConfirm: (value: string) => Promise<void> | void;
 }
 
 export interface MenuOption {
@@ -35,9 +35,9 @@ export default function UiExtrasMenu({ options }: UiExtrasMenuProps) {
     }
   }
 
-  function handleConfirm() {
+  async function handleConfirm() {
     if (!activePrompt?.value.trim()) return;
-    activePrompt.config.onConfirm(activePrompt.value.trim());
+    await activePrompt.config.onConfirm(activePrompt.value.trim());
     setActivePrompt(null);
   }
 

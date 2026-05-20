@@ -10,6 +10,7 @@ import PageLayout from '@/ui/page-layout/page-layout';
 import PageHeader from '@/ui/page-header/page-header';
 import RouteTabs from '@/ui/route-tabs/route-tabs';
 import UiExtrasMenu from '@/ui/extras-menu/extras-menu';
+import useUiToast from '@/ui/toast/use-ui-toast';
 
 function formatMoney(value: number) {
   return `${value.toLocaleString()}`;
@@ -29,16 +30,15 @@ export default function Tasks() {
   const { phaseId } = useParams<{ phaseId: string }>();
   const activePhaseId = phaseId ?? phases[0]?.id;
   const activePhase = phases.find((p) => p.id === activePhaseId);
+  const { showSuccessToast } = useUiToast();
 
-  function handleDeletePhase() {
+  async function handleDeletePhase() {
     if (!activePhaseId) return;
-    deletePhase.mutate({ phaseId: activePhaseId }, {
-      onSuccess: () => {
-        const remaining = phases.filter((p) => p.id !== activePhaseId);
-        if (remaining.length > 0) navigate(`/tasks/${remaining[0].id}`);
-        else navigate('/tasks');
-      }
-    });
+    await deletePhase.mutateAsync({ phaseId: activePhaseId });
+    showSuccessToast('Phase deleted');
+    const remaining = phases.filter((p) => p.id !== activePhaseId);
+    if (remaining.length > 0) navigate(`/tasks/${remaining[0].id}`);
+    else navigate('/tasks');
   }
 
   return (
@@ -48,7 +48,12 @@ export default function Tasks() {
         action={
           <UiButton
             size="sm"
-            onClick={() => activePhaseId && addTask.mutate({ phaseId: activePhaseId }, { onSuccess: (task) => navigate(`/tasks/${activePhaseId}/task/${task.id}`) })}
+            onClick={async () => {
+              if (!activePhaseId) return;
+              const task = await addTask.mutateAsync({ phaseId: activePhaseId });
+              showSuccessToast('Task created');
+              navigate(`/tasks/${activePhaseId}/task/${task.id}`);
+            }}
             disabled={!activePhaseId}
           >
             New Task
@@ -63,12 +68,22 @@ export default function Tasks() {
             options={[
               {
                 label: 'Add Phase',
-                prompt: { title: 'Add Phase', placeholder: 'Phase name', confirmLabel: 'Add', onConfirm: (name) => createPhase.mutate({ name }) }
+                prompt: {
+                  title: 'Add Phase',
+                  placeholder: 'Phase name',
+                  confirmLabel: 'Add',
+                  onConfirm: async (name) => { await createPhase.mutateAsync({ name }); showSuccessToast('Phase added'); }
+                }
               },
               {
                 label: 'Rename Phase',
                 disabled: !activePhase,
-                prompt: { title: 'Rename Phase', initialValue: activePhase?.name, confirmLabel: 'Rename', onConfirm: (name) => activePhaseId && updatePhase.mutate({ phaseId: activePhaseId, name }) }
+                prompt: {
+                  title: 'Rename Phase',
+                  initialValue: activePhase?.name,
+                  confirmLabel: 'Rename',
+                  onConfirm: async (name) => { if (!activePhaseId) return; await updatePhase.mutateAsync({ phaseId: activePhaseId, name }); showSuccessToast('Phase renamed'); }
+                }
               },
               {
                 label: 'Delete Phase',

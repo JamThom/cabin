@@ -6,11 +6,13 @@ import useMaterialCategoriesItemUpdate from '@/api/hooks/materials/use-material-
 import { MaterialItem } from '@/api/hooks/materials/use-material-categories';
 import MaterialItemDrawer from './components/material-item-drawer/material-item-drawer';
 import MaterialsTable from './components/materials-table/materials-table';
+import useUiToast from '@/ui/toast/use-ui-toast';
 
 export default function Category() {
   const { categoryId } = useParams<{ categoryId: string }>();
   const { data: categories = [] } = useMaterialCategories();
   const updateItem = useMaterialCategoriesItemUpdate();
+  const { showSuccessToast } = useUiToast();
   const [selectedItem, setSelectedItem] = useState<MaterialItem | null>(null);
   const category = categories.find((entry) => entry.id === categoryId);
 
@@ -22,8 +24,8 @@ export default function Category() {
       <MaterialItemDrawer
         item={selectedItem}
         onClose={() => setSelectedItem(null)}
-        onSave={(item) => {
-          updateItem.mutate({
+        onSave={async (item) => {
+          await updateItem.mutateAsync({
             categoryId: category.id,
             itemId: item.id,
             name: item.name,
@@ -33,6 +35,7 @@ export default function Category() {
             unit: item.unit,
             quantity: item.quantity
           });
+          showSuccessToast('Material saved');
           setSelectedItem(null);
         }}
       />

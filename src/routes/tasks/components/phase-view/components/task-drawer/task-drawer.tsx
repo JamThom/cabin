@@ -7,6 +7,7 @@ import { Status } from '@/store/types';
 import usePhases from '@/api/hooks/phases/use-phases';
 import usePhasesTaskUpdate from '@/api/hooks/phases/use-phases-task-update';
 import usePhasesTaskDelete from '@/api/hooks/phases/use-phases-task-delete';
+import useUiToast from '@/ui/toast/use-ui-toast';
 
 export default function TaskDrawer() {
   const { phaseId, taskId } = useParams<{ phaseId: string; taskId: string }>();
@@ -14,6 +15,7 @@ export default function TaskDrawer() {
   const { data: phases = [] } = usePhases();
   const taskUpdate = usePhasesTaskUpdate();
   const taskDelete = usePhasesTaskDelete();
+  const { showSuccessToast } = useUiToast();
 
   const task = useMemo(
     () => phases.find((p) => p.id === phaseId)?.tasks.find((t) => t.id === taskId) ?? null,
@@ -75,8 +77,8 @@ export default function TaskDrawer() {
               </Stack>
             </Drawer.Body>
             <Drawer.Footer borderTopWidth="1px" gap={2}>
-              <UiButton colorPalette="red" variant="outline" onClick={() => taskDelete.mutate({ phaseId: phaseId!, taskId: taskId! }, { onSuccess: close })}>Delete</UiButton>
-              <UiButton onClick={() => taskUpdate.mutate({ phaseId: phaseId!, taskId: taskId!, name, status, costEst, blockedBy }, { onSuccess: close })}>Save</UiButton>
+              <UiButton colorPalette="red" variant="outline" onClick={async () => { await taskDelete.mutateAsync({ phaseId: phaseId!, taskId: taskId! }); showSuccessToast('Task deleted'); close(); }}>Delete</UiButton>
+              <UiButton onClick={async () => { await taskUpdate.mutateAsync({ phaseId: phaseId!, taskId: taskId!, name, status, costEst, blockedBy }); showSuccessToast('Task saved'); close(); }}>Save</UiButton>
             </Drawer.Footer>
           </Drawer.Content>
         </Drawer.Positioner>

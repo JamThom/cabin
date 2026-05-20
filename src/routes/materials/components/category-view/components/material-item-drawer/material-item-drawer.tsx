@@ -6,7 +6,7 @@ import { MaterialItem } from '@/api/hooks/materials/use-material-categories';
 interface MaterialItemDrawerProps {
   item: MaterialItem | null;
   onClose: () => void;
-  onSave: (item: MaterialItem) => void;
+  onSave: (item: MaterialItem) => Promise<void> | void;
 }
 
 export default function MaterialItemDrawer({ item, onClose, onSave }: MaterialItemDrawerProps) {
