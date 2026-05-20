@@ -1,6 +1,7 @@
 import { Badge, Tabs } from '@chakra-ui/react';
 import UiButton from '@/ui/button/button';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
+import { useEffect } from 'react';
 import usePhases from '@/api/hooks/phases/use-phases';
 import usePhasesCreate from '@/api/hooks/phases/use-phases-create';
 import usePhasesUpdate from '@/api/hooks/phases/use-phases-update';
@@ -31,6 +32,10 @@ export default function Tasks() {
   const activePhaseId = phaseId ?? phases[0]?.id;
   const activePhase = phases.find((p) => p.id === activePhaseId);
   const { showSuccessToast } = useUiToast();
+
+  useEffect(() => {
+    if (!phaseId && phases.length > 0) navigate(`/tasks/${phases[0].id}`, { replace: true });
+  }, [phaseId, phases, navigate]);
 
   async function handleDeletePhase() {
     if (!activePhaseId) return;

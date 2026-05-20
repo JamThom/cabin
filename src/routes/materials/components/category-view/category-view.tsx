@@ -22,6 +22,7 @@ export default function Category() {
     <Box borderWidth="1px" borderRadius="lg" overflow="auto" maxH="calc(100vh - 260px)">
       <MaterialsTable items={category.items} onRowClick={(item) => setSelectedItem(item)} />
       <MaterialItemDrawer
+        categoryId={category.id}
         item={selectedItem}
         onClose={() => setSelectedItem(null)}
         onSave={async (item) => {
@@ -33,7 +34,8 @@ export default function Category() {
             url: item.url,
             cost: item.cost,
             unit: item.unit,
-            quantity: item.quantity
+            quantity: item.quantity,
+            group: item.group ?? ''
           });
           showSuccessToast('Material saved');
           setSelectedItem(null);

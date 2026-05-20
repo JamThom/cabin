@@ -1,3 +1,4 @@
+import { Badge } from '@chakra-ui/react';
 import { ColumnDef } from '@tanstack/react-table';
 import { useMemo } from 'react';
 import { MaterialItem } from '@/api/hooks/materials/use-material-categories';
@@ -23,13 +24,45 @@ function UrlCell({ url }: { url: string }) {
   } catch { /* not a valid URL */ }
   if (!valid) return <span>{url}</span>;
   return (
-    <a href={url} style={{
-      color: 'blue',
-      textDecoration: 'underline'
-    }} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
+    <a href={url} style={{ color: 'blue', textDecoration: 'underline' }} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
       {display}
     </a>
   );
+}
+
+const GROUP_PALETTE: Record<string, string> = {
+  framing: 'blue',
+  roof: 'orange',
+  weatherproofing: 'cyan',
+  windows: 'purple',
+  doors: 'green',
+  cladding: 'red',
+  foundations: 'yellow',
+  materials: 'gray',
+  floors: 'orange',
+  bathroom: 'teal',
+  kitchen: 'pink',
+  heating: 'red',
+  electric: 'yellow',
+  finishes: 'green',
+  ceiling: 'purple',
+  other: 'gray',
+  paneling: 'teal',
+};
+
+const HASH_COLORS = ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'cyan', 'purple', 'pink'];
+
+function getGroupColor(group: string): string {
+  const key = group.toLowerCase();
+  if (GROUP_PALETTE[key]) return GROUP_PALETTE[key];
+  let h = 0;
+  for (const c of group) h = (h * 31 + c.charCodeAt(0)) & 0xfffff;
+  return HASH_COLORS[h % HASH_COLORS.length];
+}
+
+function GroupBadge({ group }: { group: string }) {
+  if (!group) return null;
+  return <Badge colorPalette={getGroupColor(group)} variant="subtle" size="sm">{group}</Badge>;
 }
 
 export default function MaterialsTable({ items, onRowClick }: MaterialsTableProps) {
@@ -37,6 +70,11 @@ export default function MaterialsTable({ items, onRowClick }: MaterialsTableProp
 
   const columns = useMemo<ColumnDef<MaterialItem>[]>(
     () => [
+      {
+        accessorKey: 'group',
+        header: 'Group',
+        cell: ({ row }) => <GroupBadge group={row.original.group} />
+      },
       { accessorKey: 'name', header: 'Name', cell: ({ row }) => row.original.name },
       { accessorKey: 'productName', header: 'Product Name', cell: ({ row }) => row.original.productName },
       {

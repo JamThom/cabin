@@ -1,6 +1,7 @@
 import { Badge, Tabs } from '@chakra-ui/react';
 import UiButton from '@/ui/button/button';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
+import { useEffect } from 'react';
 import useMaterialCategories from '@/api/hooks/materials/use-material-categories';
 import useMaterialCategoriesCreate from '@/api/hooks/materials/use-material-categories-create';
 import useMaterialCategoriesUpdate from '@/api/hooks/materials/use-material-categories-update';
@@ -27,6 +28,10 @@ export default function Materials() {
   const activeCategoryId = categoryId ?? categories[0]?.id;
   const activeCategory = categories.find((c) => c.id === activeCategoryId);
   const { showSuccessToast } = useUiToast();
+
+  useEffect(() => {
+    if (!categoryId && categories.length > 0) navigate(`/materials/category/${categories[0].id}`, { replace: true });
+  }, [categoryId, categories, navigate]);
 
   async function handleDeleteCategory() {
     if (!activeCategoryId) return;

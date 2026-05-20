@@ -68,7 +68,14 @@ export default function UiTable<TData extends object>({ data, columns, onRowClic
       </Table.Header>
       <Table.Body>
         {table.getRowModel().rows.map((row) => (
-          <Table.Row key={row.id} onClick={() => onRowClick?.(row)} {...getRowProps?.(row)}>
+          <Table.Row
+            key={row.id}
+            onClick={() => onRowClick?.(row)}
+            bg={onRowClick ? 'gray.50' : undefined}
+            _dark={onRowClick ? { bg: 'gray.900' } : undefined}
+            _hover={onRowClick ? { bg: 'gray.100', _dark: { bg: 'gray.800' } } : undefined}
+            {...getRowProps?.(row)}
+          >
             {row.getVisibleCells().map((cell) => (
               <Table.Cell key={cell.id} {...getCellProps?.(cell)}>
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
