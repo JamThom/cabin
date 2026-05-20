@@ -1,4 +1,5 @@
-import { Badge, Button, Tabs } from '@chakra-ui/react';
+import { Badge, Tabs } from '@chakra-ui/react';
+import UiButton from '@/ui/button/button';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
 import usePhases from '@/api/hooks/phases/use-phases';
 import usePhasesCreate from '@/api/hooks/phases/use-phases-create';
@@ -11,7 +12,7 @@ import RouteTabs from '@/ui/route-tabs/route-tabs';
 import UiExtrasMenu from '@/ui/extras-menu/extras-menu';
 
 function formatMoney(value: number) {
-  return `$${value.toLocaleString()}`;
+  return `${value.toLocaleString()}`;
 }
 
 function parseMoney(value: string): number {
@@ -43,16 +44,15 @@ export default function Tasks() {
   return (
     <PageLayout>
       <PageHeader
-        title="Cabin Build Organiser"
+        title={<>Cabin Build Organiser <Badge>Est cost: {phases.reduce((sum, phase) => sum + phase.tasks.reduce((s, task) => s + parseMoney(task.costEst), 0), 0).toLocaleString()}</Badge></>}
         action={
-          <Button
-            colorPalette="teal"
+          <UiButton
             size="sm"
-            onClick={() => activePhaseId && addTask.mutate({ phaseId: activePhaseId })}
+            onClick={() => activePhaseId && addTask.mutate({ phaseId: activePhaseId }, { onSuccess: (task) => navigate(`/tasks/${activePhaseId}/task/${task.id}`) })}
             disabled={!activePhaseId}
           >
             New Task
-          </Button>
+          </UiButton>
         }
       />
       <RouteTabs
@@ -85,7 +85,7 @@ export default function Tasks() {
           return (
             <Tabs.Trigger key={phase.id} value={phase.id}>
               {phase.name}
-              <Badge ml={2} colorPalette="teal" variant="subtle">{formatMoney(total)}</Badge>
+              <Badge ml={2} size="xs" colorPalette="teal" variant="subtle">{formatMoney(total)}</Badge>
             </Tabs.Trigger>
           );
         })}

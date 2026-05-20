@@ -1,4 +1,5 @@
-import { Button, CloseButton, Drawer, Input, Portal, Stack, Text } from '@chakra-ui/react';
+import { CloseButton, Drawer, Input, Portal, Stack, Text } from '@chakra-ui/react';
+import UiButton from '@/ui/button/button';
 import { useEffect, useState } from 'react';
 import { MaterialItem } from '@/api/hooks/materials/use-material-categories';
 
@@ -49,9 +50,8 @@ export default function MaterialItemDrawer({ item, onClose, onSave }: MaterialIt
               </Stack>
             </Drawer.Body>
             <Drawer.Footer borderTopWidth="1px" gap={2}>
-              <Button variant="ghost" onClick={onClose}>Cancel</Button>
-              <Button
-                colorPalette="teal"
+              <UiButton variant="ghost" onClick={onClose}>Cancel</UiButton>
+              <UiButton
                 onClick={() => onSave({
                   ...item,
                   name,
@@ -63,7 +63,7 @@ export default function MaterialItemDrawer({ item, onClose, onSave }: MaterialIt
                 })}
               >
                 Save
-              </Button>
+              </UiButton>
             </Drawer.Footer>
           </Drawer.Content>
         </Drawer.Positioner>

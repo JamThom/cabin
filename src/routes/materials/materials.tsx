@@ -1,4 +1,5 @@
-import { Badge, Button, Tabs } from '@chakra-ui/react';
+import { Badge, Tabs } from '@chakra-ui/react';
+import UiButton from '@/ui/button/button';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
 import useMaterialCategories from '@/api/hooks/materials/use-material-categories';
 import useMaterialCategoriesCreate from '@/api/hooks/materials/use-material-categories-create';
@@ -11,7 +12,7 @@ import RouteTabs from '@/ui/route-tabs/route-tabs';
 import UiExtrasMenu from '@/ui/extras-menu/extras-menu';
 
 function formatMoney(value: number) {
-  return `$${value.toFixed(2)}`;
+  return `${value.toFixed(2)}`;
 }
 
 export default function Materials() {
@@ -41,14 +42,13 @@ export default function Materials() {
       <PageHeader
         title="Materials"
         action={
-          <Button
-            colorPalette="teal"
+          <UiButton
             size="sm"
             onClick={() => activeCategoryId && addItem.mutate({ categoryId: activeCategoryId })}
             disabled={!activeCategoryId}
           >
             New Material
-          </Button>
+          </UiButton>
         }
       />
       <RouteTabs
@@ -81,7 +81,7 @@ export default function Materials() {
           return (
             <Tabs.Trigger key={category.id} value={category.id}>
               {category.name}
-              <Badge ml={2} colorPalette="teal" variant="subtle">{formatMoney(total)}</Badge>
+              <Badge ml={2} size="xs" colorPalette="teal" variant="subtle">{formatMoney(total)}</Badge>
             </Tabs.Trigger>
           );
         })}

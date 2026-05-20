@@ -9,7 +9,7 @@ interface MaterialsTableProps {
 }
 
 function formatMoney(value: number) {
-  return `$${value.toFixed(2)}`;
+  return `${value.toFixed(2)}`;
 }
 
 export default function MaterialsTable({ items, onRowClick }: MaterialsTableProps) {

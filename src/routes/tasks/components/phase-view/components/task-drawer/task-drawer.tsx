@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Box, Button, CloseButton, Drawer, For, Input, NativeSelect, Portal, Stack, Text } from '@chakra-ui/react';
+import { Box, CloseButton, Drawer, For, Input, NativeSelect, Portal, Stack, Text } from '@chakra-ui/react';
+import UiButton from '@/ui/button/button';
 import { useNavigate, useParams } from 'react-router-dom';
 import { STATUSES } from '@/store/constants';
 import { Status } from '@/store/types';
@@ -74,8 +75,8 @@ export default function TaskDrawer() {
               </Stack>
             </Drawer.Body>
             <Drawer.Footer borderTopWidth="1px" gap={2}>
-              <Button colorPalette="red" variant="outline" onClick={() => taskDelete.mutate({ phaseId: phaseId!, taskId: taskId! }, { onSuccess: close })}>Delete</Button>
-              <Button colorPalette="teal" onClick={() => taskUpdate.mutate({ phaseId: phaseId!, taskId: taskId!, name, status, costEst, blockedBy }, { onSuccess: close })}>Save</Button>
+              <UiButton colorPalette="red" variant="outline" onClick={() => taskDelete.mutate({ phaseId: phaseId!, taskId: taskId! }, { onSuccess: close })}>Delete</UiButton>
+              <UiButton onClick={() => taskUpdate.mutate({ phaseId: phaseId!, taskId: taskId!, name, status, costEst, blockedBy }, { onSuccess: close })}>Save</UiButton>
             </Drawer.Footer>
           </Drawer.Content>
         </Drawer.Positioner>

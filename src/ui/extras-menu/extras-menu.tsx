@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Button, Dialog, IconButton, Input, Menu, Portal, Stack } from '@chakra-ui/react';
+import { Dialog, IconButton, Input, Menu, Portal, Stack } from '@chakra-ui/react';
+import UiButton from '@/ui/button/button';
 import { faEllipsisVertical } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
@@ -83,10 +84,10 @@ export default function UiExtrasMenu({ options }: UiExtrasMenuProps) {
                     autoFocus
                   />
                   <Stack direction="row" justify="flex-end" gap={2}>
-                    <Button variant="ghost" onClick={() => setActivePrompt(null)}>Cancel</Button>
-                    <Button colorPalette="teal" onClick={handleConfirm}>
+                    <UiButton variant="ghost" onClick={() => setActivePrompt(null)}>Cancel</UiButton>
+                    <UiButton onClick={handleConfirm}>
                       {activePrompt.config.confirmLabel ?? 'Confirm'}
-                    </Button>
+                    </UiButton>
                   </Stack>
                 </Stack>
               </Dialog.Content>

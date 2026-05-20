@@ -2,7 +2,7 @@ import { Heading, Stack } from '@chakra-ui/react';
 import { ReactNode } from 'react';
 
 type Props = {
-  title: string;
+  title: ReactNode;
   action?: ReactNode;
 };
 

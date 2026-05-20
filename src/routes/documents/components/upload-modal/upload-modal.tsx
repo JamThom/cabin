@@ -1,4 +1,5 @@
-import { Box, Button, Dialog, Input, Portal, Stack, Text } from '@chakra-ui/react';
+import { Box, Dialog, Input, Portal, Stack, Text } from '@chakra-ui/react';
+import UiButton from '@/ui/button/button';
 import { DragEvent, useRef, useState } from 'react';
 import { DocumentFolder } from '@/store/types';
 
@@ -45,9 +46,9 @@ export default function UploadModal({ folders, onUpload }: UploadModalProps) {
 
   return (
     <>
-      <Button colorPalette="teal" size="sm" onClick={() => setOpen(true)}>
+      <UiButton size="sm" onClick={() => setOpen(true)}>
         Upload Document
-      </Button>
+      </UiButton>
       <Dialog.Root open={open} onOpenChange={(event) => { if (!event.open) handleClose(); }} placement="center">
         <Portal>
           <Dialog.Backdrop />
@@ -102,15 +103,10 @@ export default function UploadModal({ folders, onUpload }: UploadModalProps) {
                   size="sm"
                 />
                 <Stack direction="row" justify="flex-end" gap={2}>
-                  <Button variant="ghost" size="sm" onClick={handleClose}>Cancel</Button>
-                  <Button
-                    colorPalette="teal"
-                    size="sm"
-                    onClick={handleUpload}
-                    disabled={!file || !folderId}
-                  >
+                  <UiButton variant="ghost" size="sm" onClick={handleClose}>Cancel</UiButton>
+                  <UiButton size="sm" onClick={handleUpload} disabled={!file || !folderId}>
                     Upload
-                  </Button>
+                  </UiButton>
                 </Stack>
               </Stack>
             </Dialog.Content>
