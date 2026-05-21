@@ -339,66 +339,71 @@ export default {
 
     // POST /api/documents/upload
     if (method === 'POST' && pathname === '/api/documents/upload') {
-      const state = await getState(db);
-      if (!state.documentFolders) state.documentFolders = [];
-      if (!state.documentBlobById) state.documentBlobById = {};
+      try {
+        const state = await getState(db);
+        if (!state.documentFolders) state.documentFolders = [];
+        if (!state.documentBlobById) state.documentBlobById = {};
 
-      let folderId = '';
-      let name = '';
-      let tags = [];
-      let mimeType = 'application/octet-stream';
-      let externalUrl = '';
-      let fileBase64 = '';
+        let folderId = '';
+        let name = '';
+        let tags = [];
+        let mimeType = 'application/octet-stream';
+        let fileBase64 = '';
 
-      const contentType = request.headers.get('content-type') || '';
-      if (contentType.includes('multipart/form-data')) {
-        const form = await request.formData();
-        const filePart = form.get('file');
-        folderId = String(form.get('folderId') || '');
-        name = String(form.get('name') || '');
-        mimeType = String(form.get('mimeType') || 'application/octet-stream');
-        externalUrl = String(form.get('url') || '');
-        const rawTags = String(form.get('tags') || '[]');
-        try {
-          tags = JSON.parse(rawTags);
-        } catch {
-          tags = [];
-        }
-        if (filePart && typeof filePart !== 'string') {
+        const contentType = request.headers.get('content-type') || '';
+        if (contentType.includes('multipart/form-data')) {
+          const form = await request.formData();
+          const filePart = form.get('file');
+          folderId = String(form.get('folderId') || '');
+          name = String(form.get('name') || '');
+          mimeType = String(form.get('mimeType') || 'application/octet-stream');
+          const rawTags = String(form.get('tags') || '[]');
+          try {
+            tags = JSON.parse(rawTags);
+          } catch {
+            tags = [];
+          }
+          if (!Array.isArray(tags)) tags = [];
+          if (!filePart || typeof filePart === 'string') {
+            return json({ error: 'A multipart file field named "file" is required' }, 400);
+          }
           const fileBuffer = await filePart.arrayBuffer();
           fileBase64 = uint8ToBase64(new Uint8Array(fileBuffer));
           if (!name) name = filePart.name || 'document';
           if (!mimeType || mimeType === 'application/octet-stream') {
             mimeType = filePart.type || 'application/octet-stream';
           }
+        } else {
+          const body = await request.json();
+          folderId = body.folderId;
+          name = body.name;
+          tags = Array.isArray(body.tags) ? body.tags : [];
+          mimeType = body.mimeType || 'application/octet-stream';
         }
-      } else {
-        const body = await request.json();
-        folderId = body.folderId;
-        name = body.name;
-        tags = Array.isArray(body.tags) ? body.tags : [];
-        mimeType = body.mimeType || 'application/octet-stream';
-        externalUrl = body.url || '';
-      }
 
-      const folder = state.documentFolders.find((f) => f.id === folderId);
-      if (!folder) return json({ error: 'Folder not found' }, 404);
-      const fileId = crypto_uuid();
-      if (fileBase64) {
-        state.documentBlobById[fileId] = { base64: fileBase64, mimeType, name };
+        if (!folderId) return json({ error: 'folderId is required' }, 400);
+        const folder = state.documentFolders.find((f) => f.id === folderId);
+        if (!folder) return json({ error: 'Folder not found' }, 404);
+        if (!Array.isArray(folder.files)) folder.files = [];
+
+        const fileId = crypto_uuid();
+        if (fileBase64) {
+          state.documentBlobById[fileId] = { base64: fileBase64, mimeType, name };
+        }
+        const file = {
+          id: fileId,
+          folderId,
+          name: name || 'document',
+          tags,
+          modified: new Date().toISOString(),
+          mimeType,
+        };
+        folder.files.push(file);
+        await saveState(db, state);
+        return json(file, 201);
+      } catch (error) {
+        return json({ error: 'Upload failed', detail: String(error?.message || error) }, 500);
       }
-      const file = {
-        id: fileId,
-        folderId,
-        name: name || 'document',
-        tags,
-        modified: new Date().toISOString(),
-        url: fileBase64 ? `/api/documents/files/${fileId}` : externalUrl,
-        mimeType,
-      };
-      folder.files.push(file);
-      await saveState(db, state);
-      return json(file, 201);
     }
 
     return json({ error: 'Not found' }, 404);

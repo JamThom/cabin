@@ -13,7 +13,6 @@ interface DocRow {
   name: string;
   tags: string[];
   modified: string;
-  url: string;
   mimeType: string;
 }
 
@@ -36,7 +35,6 @@ export default function DocumentsTable({ folders, onFileClick }: DocumentsTableP
         name: folder.name,
         tags: [],
         modified: '',
-        url: '',
         mimeType: ''
       });
       if (expandedFolderIds.has(folder.id)) {
@@ -49,7 +47,6 @@ export default function DocumentsTable({ folders, onFileClick }: DocumentsTableP
             name: file.name,
             tags: file.tags,
             modified: file.modified,
-            url: file.url,
             mimeType: file.mimeType
           });
         });
@@ -121,7 +118,6 @@ export default function DocumentsTable({ folders, onFileClick }: DocumentsTableP
             name: row.original.name,
             tags: row.original.tags,
             modified: row.original.modified,
-            url: row.original.url,
             mimeType: row.original.mimeType,
           });
         }

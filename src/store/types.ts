@@ -20,7 +20,6 @@ export interface DocumentFile {
   name: string;
   tags: string[];
   modified: string;
-  url: string;
   mimeType: string;
 }
 

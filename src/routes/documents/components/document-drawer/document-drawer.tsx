@@ -10,7 +10,7 @@ type Props = {
 };
 
 export default function DocumentDrawer({ file, onClose }: Props) {
-  const resolvedUrl = file ? (file.url || `${API_BASE_URL}/api/documents/files/${file.id}`) : '';
+  const resolvedUrl = file ? (`${API_BASE_URL}/api/documents/files/${file.id}`) : '';
 
   return (
     <Drawer.Root open={Boolean(file)} onOpenChange={(e) => !e.open && onClose()} placement="end" size="md">
@@ -29,7 +29,6 @@ export default function DocumentDrawer({ file, onClose }: Props) {
                 <Stack gap={1}><Text fontSize="sm" color="fg.muted">Type</Text><Text>{file?.mimeType ?? ''}</Text></Stack>
                 <Stack gap={1}><Text fontSize="sm" color="fg.muted">Modified</Text><Text>{file?.modified ? formatDate(file.modified) : ''}</Text></Stack>
                 <Stack gap={1}><Text fontSize="sm" color="fg.muted">Tags</Text><Text>{file?.tags.length ? file.tags.join(', ') : 'No tags'}</Text></Stack>
-                {!file?.url && <Text fontSize="sm" color="fg.muted">Opened via document id endpoint.</Text>}
               </Stack>
             </Drawer.Body>
             <Drawer.Footer borderTopWidth="1px" gap={2}>
