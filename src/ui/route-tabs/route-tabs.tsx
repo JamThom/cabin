@@ -65,6 +65,7 @@ export default function RouteTabs({ value, onValueChange, action, children }: Pr
         colorPalette="teal"
         size="sm"
       >
+        
         {isMobile ? (
           <Stack direction="row" align="center" gap={2} w="100%">
             <Tabs.List w="100%" display="flex" flex="1" gap={2}>
