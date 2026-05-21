@@ -6,7 +6,7 @@ import useDocumentFoldersCreate from '@/api/hooks/documents/use-document-folders
 
 interface UploadModalProps {
   folders: DocumentFolder[];
-  onUpload: (payload: { name: string; folderId: string; tags: string[]; mimeType: string }) => void;
+  onUpload: (payload: { file: File; folderId: string; tags: string[] }) => void;
 }
 
 const NEW_FOLDER_VALUE = '__new__';
@@ -37,10 +37,9 @@ export default function UploadModal({ folders, onUpload }: UploadModalProps) {
       resolvedFolderId = folder.id;
     }
     onUpload({
-      name: file.name,
+      file,
       folderId: resolvedFolderId,
-      tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
-      mimeType: file.type || 'application/octet-stream'
+      tags: tags.split(',').map((t) => t.trim()).filter(Boolean)
     });
     setFile(null);
     setFolderId('');
@@ -102,21 +101,23 @@ export default function UploadModal({ folders, onUpload }: UploadModalProps) {
                     <Text color="fg.subtle">Drag & drop a file here, or click to browse</Text>
                   )}
                 </Box>
-                <Box as="select"
+                <select
                   value={folderId}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleFolderChange(e.target.value)}
-                  borderWidth="1px"
-                  borderRadius="md"
-                  px={3}
-                  py={2}
-                  fontSize="sm"
+                  onChange={(e) => handleFolderChange(e.currentTarget.value)}
+                  style={{
+                    border: '1px solid var(--chakra-colors-border)',
+                    borderRadius: '0.375rem',
+                    padding: '0.5rem 0.75rem',
+                    fontSize: '0.875rem',
+                    background: 'transparent',
+                  }}
                 >
                   <option value="">Select folder…</option>
                   {folders.map((f) => (
                     <option key={f.id} value={f.id}>{f.name}</option>
                   ))}
                   <option value={NEW_FOLDER_VALUE}>+ New Folder</option>
-                </Box>
+                </select>
                 {folderId === NEW_FOLDER_VALUE && (
                   <Input
                     placeholder="Folder name"

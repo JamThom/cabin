@@ -3,21 +3,26 @@ import apiRequest from '@/api/hooks/request';
 import { DocumentFile } from '@/store/types';
 
 interface UploadPayload {
-  name: string;
+  file: File;
   folderId: string;
   tags: string[];
-  mimeType: string;
 }
 
 export default function useDocumentsUpload() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: UploadPayload) =>
-      apiRequest<DocumentFile>('/api/documents/upload', {
+    mutationFn: (payload: UploadPayload) => {
+      const body = new FormData();
+      body.append('file', payload.file, payload.file.name);
+      body.append('folderId', payload.folderId);
+      body.append('tags', JSON.stringify(payload.tags));
+      body.append('name', payload.file.name);
+      body.append('mimeType', payload.file.type || 'application/octet-stream');
+      return apiRequest<DocumentFile>('/api/documents/upload', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      }),
+        body
+      });
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['documents'] })
   });
 }
