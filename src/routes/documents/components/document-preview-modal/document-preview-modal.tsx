@@ -1,6 +1,6 @@
 import { CloseButton, Dialog, Portal, Spinner, Stack, Text, Box } from '@chakra-ui/react';
 import { useEffect, useMemo, useState } from 'react';
-import { getDocument } from 'pdfjs-dist/build/pdf.mjs';
+import * as pdfjsLib from 'pdfjs-dist/build/pdf.mjs';
 import { DocumentFile } from '@/store/types';
 import { API_BASE_URL } from '@/api/hooks/request';
 
@@ -24,17 +24,26 @@ export default function DocumentPreviewModal({ file, onClose }: Props) {
     }
 
     let cancelled = false;
-    const loadingTask = getDocument({ url: resolvedUrl, disableWorker: true } as any);
-
-    async function renderPdf() {
+    
+    async function loadAndRenderPdf() {
       try {
         setStatus('loading');
+        
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.7.284/pdf.worker.min.js';
+        
+        const loadingTask = pdfjsLib.getDocument({ url: resolvedUrl });
         const pdf = await loadingTask.promise;
-        if (cancelled) return;
+        if (cancelled) {
+          loadingTask.destroy();
+          return;
+        }
 
         const images: string[] = [];
         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-          if (cancelled) return;
+          if (cancelled) {
+            loadingTask.destroy();
+            return;
+          }
           const page = await pdf.getPage(pageNum);
           const canvas = document.createElement('canvas');
           const context = canvas.getContext('2d');
@@ -50,15 +59,18 @@ export default function DocumentPreviewModal({ file, onClose }: Props) {
           setPageImages(images);
           setStatus('ready');
         }
-      } catch {
-        if (!cancelled) setStatus('error');
+        loadingTask.destroy();
+      } catch (error) {
+        console.error('PDF rendering error:', error);
+        if (!cancelled) {
+          setStatus('error');
+        }
       }
     }
 
-    renderPdf();
+    loadAndRenderPdf();
     return () => {
       cancelled = true;
-      loadingTask.destroy();
     };
   }, [file, isPdf, resolvedUrl]);
 
@@ -69,7 +81,7 @@ export default function DocumentPreviewModal({ file, onClose }: Props) {
         <Dialog.Positioner>
           <Dialog.Content p={0} maxW="90vw" maxH="90vh" w="fit-content" h="fit-content">
             <Dialog.CloseTrigger position="absolute" top={4} right={4} zIndex={10} asChild>
-              <CloseButton size="lg" />
+              <CloseButton bg="gray.200" size="lg" />
             </Dialog.CloseTrigger>
             <Dialog.Body p={0} display="flex" alignItems="center" justifyContent="center" overflow="auto">
               {isImage && file ? (
