@@ -8,7 +8,8 @@
       "@/api/*": ["src/api/*"],
       "@/ui/*": ["src/ui/*"],
       "@/routes/*": ["src/routes/*"],
-      "@/store/*": ["src/store/*"]
+      "@/store/*": ["src/store/*"],
+      "@/utils/*": ["src/utils/*"]
     },
     "jsx": "react-jsx",
     "strict": true,

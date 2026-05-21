@@ -1,9 +1,10 @@
-import { CloseButton, Drawer, Input, Portal, Stack, Text } from '@chakra-ui/react';
+import { CloseButton, Drawer, Portal } from '@chakra-ui/react';
 import UiButton from '@/ui/button/button';
 import { useEffect, useState } from 'react';
 import { MaterialItem } from '@/api/hooks/materials/use-material-categories';
 import useMaterialCategoriesItemDelete from '@/api/hooks/materials/use-material-categories-item-delete';
 import useUiToast from '@/ui/toast/use-ui-toast';
+import MaterialItemFormFields, { MaterialFormValues } from '../material-item-form-fields/material-item-form-fields';
 
 interface MaterialItemDrawerProps {
   categoryId: string;
@@ -15,23 +16,21 @@ interface MaterialItemDrawerProps {
 export default function MaterialItemDrawer({ categoryId, item, onClose, onSave }: MaterialItemDrawerProps) {
   const deleteItem = useMaterialCategoriesItemDelete();
   const { showSuccessToast } = useUiToast();
-  const [name, setName] = useState('');
-  const [productName, setProductName] = useState('');
-  const [url, setUrl] = useState('');
-  const [cost, setCost] = useState('0');
-  const [unit, setUnit] = useState('');
-  const [quantity, setQuantity] = useState('1');
-  const [group, setGroup] = useState('');
+  const [values, setValues] = useState<MaterialFormValues>({
+    name: '', productName: '', url: '', cost: '0', unit: '', quantity: '1', group: '',
+  });
 
   useEffect(() => {
     if (!item) return;
-    setName(item.name);
-    setProductName(item.productName);
-    setUrl(item.url);
-    setCost(String(item.cost));
-    setUnit(item.unit);
-    setQuantity(String(item.quantity));
-    setGroup(item.group ?? '');
+    setValues({
+      name: item.name,
+      productName: item.productName,
+      url: item.url,
+      cost: String(item.cost),
+      unit: item.unit,
+      quantity: String(item.quantity),
+      group: item.group ?? '',
+    });
   }, [item]);
 
   if (!item) return null;
@@ -47,15 +46,7 @@ export default function MaterialItemDrawer({ categoryId, item, onClose, onSave }
               <Drawer.CloseTrigger asChild><CloseButton size="sm" /></Drawer.CloseTrigger>
             </Drawer.Header>
             <Drawer.Body pt={6}>
-              <Stack gap={4}>
-                <Stack gap={1}><Text fontSize="sm" fontWeight="medium">Name</Text><Input value={name} onChange={(e) => setName(e.target.value)} /></Stack>
-                <Stack gap={1}><Text fontSize="sm" fontWeight="medium">Product Name</Text><Input value={productName} onChange={(e) => setProductName(e.target.value)} /></Stack>
-                <Stack gap={1}><Text fontSize="sm" fontWeight="medium">URL</Text><Input value={url} onChange={(e) => setUrl(e.target.value)} /></Stack>
-                <Stack gap={1}><Text fontSize="sm" fontWeight="medium">Cost</Text><Input type="number" value={cost} onChange={(e) => setCost(e.target.value)} /></Stack>
-                <Stack gap={1}><Text fontSize="sm" fontWeight="medium">Unit</Text><Input value={unit} onChange={(e) => setUnit(e.target.value)} /></Stack>
-                <Stack gap={1}><Text fontSize="sm" fontWeight="medium">Quantity</Text><Input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} /></Stack>
-                <Stack gap={1}><Text fontSize="sm" fontWeight="medium">Group</Text><Input placeholder="e.g. Roof" value={group} onChange={(e) => setGroup(e.target.value)} /></Stack>
-              </Stack>
+              <MaterialItemFormFields values={values} onChange={(field, value) => setValues(prev => ({ ...prev, [field]: value }))} />
             </Drawer.Body>
             <Drawer.Footer borderTopWidth="1px" gap={2}>
               <UiButton
@@ -71,7 +62,16 @@ export default function MaterialItemDrawer({ categoryId, item, onClose, onSave }
               </UiButton>
               <UiButton variant="ghost" onClick={onClose}>Cancel</UiButton>
               <UiButton
-                onClick={() => onSave({ ...item, name, productName, url, cost: Number(cost) || 0, unit, quantity: Number(quantity) || 0, group })}
+                onClick={() => onSave({
+                  ...item,
+                  name: values.name ?? '',
+                  productName: values.productName ?? '',
+                  url: values.url ?? '',
+                  cost: Number(values.cost) || 0,
+                  unit: values.unit ?? '',
+                  quantity: Number(values.quantity) || 0,
+                  group: values.group ?? '',
+                })}
               >
                 Save
               </UiButton>

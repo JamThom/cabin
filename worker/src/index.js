@@ -180,6 +180,30 @@ export default {
       return json(item, 201);
     }
 
+    // PATCH /api/material-categories/:categoryId/items  (bulk update)
+    const itemsBulkPatch = pathname.match(/^\/api\/material-categories\/([^/]+)\/items$/);
+    if (method === 'PATCH' && itemsBulkPatch) {
+      const categoryId = itemsBulkPatch[1];
+      const updates = await request.json(); // [{ id, name, productName, url, cost, unit, quantity, group }]
+      const state = await getState(db);
+      const category = state.categories.find(c => c.id === categoryId);
+      if (!category) return json({ error: 'Not found' }, 404);
+      for (const update of updates) {
+        const item = category.items.find(i => i.id === update.id);
+        if (item) Object.assign(item, {
+          name: update.name,
+          productName: update.productName,
+          url: update.url,
+          cost: update.cost,
+          unit: update.unit,
+          quantity: update.quantity,
+          group: update.group ?? item.group ?? '',
+        });
+      }
+      await saveState(db, state);
+      return json(category.items);
+    }
+
     // PATCH /api/material-categories/:categoryId/items/:itemId
     const itemPatch = pathname.match(/^\/api\/material-categories\/([^/]+)\/items\/([^/]+)$/);
     if (method === 'PATCH' && itemPatch) {

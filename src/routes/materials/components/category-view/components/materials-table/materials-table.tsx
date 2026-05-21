@@ -1,16 +1,18 @@
-import { Badge } from '@chakra-ui/react';
+import { Badge, Text } from '@chakra-ui/react';
 import { ColumnDef } from '@tanstack/react-table';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import UiTableCheckbox, { useRowSelection } from '@/ui/table/table-checkbox';
 import { MaterialItem } from '@/api/hooks/materials/use-material-categories';
 import UiTable from '@/ui/table/table';
+import UiBulkActions from '@/ui/bulk-actions/bulk-actions';
+import UiButton from '@/ui/button/button';
+import BulkEditDrawer from '../bulk-edit-drawer/bulk-edit-drawer';
+import { formatMoney } from '@/utils/format-money';
 
 interface MaterialsTableProps {
+  categoryId: string;
   items: MaterialItem[];
   onRowClick: (item: MaterialItem) => void;
-}
-
-function formatMoney(value: number) {
-  return `${value.toFixed(2)}`;
 }
 
 function UrlCell({ url }: { url: string }) {
@@ -30,34 +32,10 @@ function UrlCell({ url }: { url: string }) {
   );
 }
 
-const GROUP_PALETTE: Record<string, string> = {
-  framing: 'blue',
-  roof: 'orange',
-  weatherproofing: 'cyan',
-  windows: 'purple',
-  doors: 'green',
-  cladding: 'red',
-  foundations: 'yellow',
-  materials: 'gray',
-  floors: 'orange',
-  bathroom: 'teal',
-  kitchen: 'pink',
-  heating: 'red',
-  electric: 'yellow',
-  finishes: 'green',
-  ceiling: 'purple',
-  other: 'gray',
-  paneling: 'teal',
-};
-
-const HASH_COLORS = ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'cyan', 'purple', 'pink'];
+const GROUP_COLORS = ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'cyan', 'purple', 'pink'];
 
 function getGroupColor(group: string): string {
-  const key = group.toLowerCase();
-  if (GROUP_PALETTE[key]) return GROUP_PALETTE[key];
-  let h = 0;
-  for (const c of group) h = (h * 31 + c.charCodeAt(0)) & 0xfffff;
-  return HASH_COLORS[h % HASH_COLORS.length];
+  return GROUP_COLORS[group.charCodeAt(0) % GROUP_COLORS.length];
 }
 
 function GroupBadge({ group }: { group: string }) {
@@ -65,23 +43,42 @@ function GroupBadge({ group }: { group: string }) {
   return <Badge colorPalette={getGroupColor(group)} variant="subtle" size="sm">{group}</Badge>;
 }
 
-export default function MaterialsTable({ items, onRowClick }: MaterialsTableProps) {
-  const data = useMemo(() => items, [items]);
+export default function MaterialsTable({ categoryId, items, onRowClick }: MaterialsTableProps) {
+  const { rowSelection, setRowSelection, handleRowMouseEnter } = useRowSelection(items);
+  const [bulkEditOpen, setBulkEditOpen] = useState(false);
+
+  const selectedItems = useMemo(
+    () => items.filter((_, i) => rowSelection[String(i)]),
+    [items, rowSelection]
+  );
+
+  const selectedTotal = useMemo(
+    () => selectedItems.reduce((sum, item) => sum + item.cost * item.quantity, 0),
+    [selectedItems]
+  );
 
   const columns = useMemo<ColumnDef<MaterialItem>[]>(
     () => [
       {
-        accessorKey: 'group',
-        header: 'Group',
-        cell: ({ row }) => <GroupBadge group={row.original.group} />
+        id: 'select',
+        enableSorting: false,
+        header: ({ table }) => (
+          <input
+            type="checkbox"
+            checked={table.getIsAllRowsSelected()}
+            ref={(el) => {
+              if (el) el.indeterminate = table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected();
+            }}
+            onChange={table.getToggleAllRowsSelectedHandler()}
+            style={{ cursor: 'pointer' }}
+          />
+        ),
+        cell: ({ row }) => <UiTableCheckbox row={row} setRowSelection={setRowSelection} />,
       },
+      { accessorKey: 'group', header: 'Group', cell: ({ row }) => <GroupBadge group={row.original.group} /> },
       { accessorKey: 'name', header: 'Name', cell: ({ row }) => row.original.name },
       { accessorKey: 'productName', header: 'Product Name', cell: ({ row }) => row.original.productName },
-      {
-        accessorKey: 'url',
-        header: 'URL',
-        cell: ({ row }) => <UrlCell url={row.original.url} />
-      },
+      { accessorKey: 'url', header: 'URL', cell: ({ row }) => <UrlCell url={row.original.url} /> },
       { accessorKey: 'cost', header: 'Cost', cell: ({ row }) => formatMoney(row.original.cost) },
       { accessorKey: 'unit', header: 'Unit', cell: ({ row }) => row.original.unit },
       { accessorKey: 'quantity', header: 'Quantity', cell: ({ row }) => row.original.quantity },
@@ -89,11 +86,37 @@ export default function MaterialsTable({ items, onRowClick }: MaterialsTableProp
         id: 'totalCost',
         header: 'Total Cost',
         accessorFn: (row) => row.cost * row.quantity,
-        cell: ({ row }) => formatMoney(row.original.cost * row.original.quantity)
-      }
+        cell: ({ row }) => formatMoney(row.original.cost * row.original.quantity),
+      },
     ],
     []
   );
 
-  return <UiTable data={data} columns={columns} onRowClick={(row) => onRowClick(row.original)} getRowProps={() => ({ cursor: 'pointer' })} />;
+  return (
+    <>
+      <UiTable
+        data={items}
+        columns={columns}
+        onRowClick={(row) => onRowClick(row.original)}
+        getRowProps={() => ({ cursor: 'pointer' })}
+        rowSelection={rowSelection}
+        onRowSelectionChange={setRowSelection}
+        onRowMouseEnter={handleRowMouseEnter}
+      />
+      {selectedItems.length > 0 && (
+        <UiBulkActions>
+          <Text fontSize="sm" fontWeight="medium">{selectedItems.length} selected · {formatMoney(selectedTotal)}</Text>
+          <UiButton size="sm" onClick={() => setBulkEditOpen(true)}>
+            Edit {selectedItems.length} items
+          </UiButton>
+        </UiBulkActions>
+      )}
+      <BulkEditDrawer
+        categoryId={categoryId}
+        items={selectedItems}
+        open={bulkEditOpen}
+        onClose={() => { setBulkEditOpen(false); setRowSelection({}); }}
+      />
+    </>
+  );
 }

@@ -12,10 +12,7 @@ import PageHeader from '@/ui/page-header/page-header';
 import RouteTabs from '@/ui/route-tabs/route-tabs';
 import UiExtrasMenu from '@/ui/extras-menu/extras-menu';
 import useUiToast from '@/ui/toast/use-ui-toast';
-
-function formatMoney(value: number) {
-  return `${value.toFixed(2)}`;
-}
+import { formatMoney } from '@/utils/format-money';
 
 export default function Materials() {
   const { data: categories = [] } = useMaterialCategories();

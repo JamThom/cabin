@@ -18,6 +18,7 @@ const ctx = await context({
     '@/ui': './src/ui',
     '@/routes': './src/routes',
     '@/store': './src/store',
+    '@/utils': './src/utils',
   },
   jsx: 'automatic',
   define: { 'process.env.NODE_ENV': '"development"' },

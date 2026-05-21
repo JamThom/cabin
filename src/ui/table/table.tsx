@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Table } from '@chakra-ui/react';
-import { Cell, ColumnDef, Row, SortingState, flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
+import {
+  Cell, ColumnDef, OnChangeFn, Row, RowSelectionState, SortingState,
+  flexRender, getCoreRowModel, getSortedRowModel, useReactTable,
+} from '@tanstack/react-table';
 import { ComponentProps } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
@@ -14,9 +17,15 @@ interface UiTableProps<TData extends object> {
   onRowClick?: (row: Row<TData>) => void;
   getRowProps?: (row: Row<TData>) => UiTableRowProps;
   getCellProps?: (cell: Cell<TData, unknown>) => UiTableCellProps;
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: OnChangeFn<RowSelectionState>;
+  onRowMouseEnter?: (row: Row<TData>) => void;
 }
 
-export default function UiTable<TData extends object>({ data, columns, onRowClick, getRowProps, getCellProps }: UiTableProps<TData>) {
+export default function UiTable<TData extends object>({
+  data, columns, onRowClick, getRowProps, getCellProps,
+  rowSelection, onRowSelectionChange, onRowMouseEnter,
+}: UiTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
@@ -24,8 +33,9 @@ export default function UiTable<TData extends object>({ data, columns, onRowClic
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    state: { sorting },
+    state: { sorting, ...(rowSelection !== undefined ? { rowSelection } : {}) },
     onSortingChange: setSorting,
+    ...(onRowSelectionChange ? { onRowSelectionChange, enableRowSelection: true } : {}),
   });
 
   return (
@@ -67,22 +77,26 @@ export default function UiTable<TData extends object>({ data, columns, onRowClic
         ))}
       </Table.Header>
       <Table.Body>
-        {table.getRowModel().rows.map((row) => (
-          <Table.Row
-            key={row.id}
-            onClick={() => onRowClick?.(row)}
-            bg={onRowClick ? 'gray.50' : undefined}
-            _dark={onRowClick ? { bg: 'gray.900' } : undefined}
-            _hover={onRowClick ? { bg: 'gray.100', _dark: { bg: 'gray.800' } } : undefined}
-            {...getRowProps?.(row)}
-          >
-            {row.getVisibleCells().map((cell) => (
-              <Table.Cell key={cell.id} {...getCellProps?.(cell)}>
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-              </Table.Cell>
-            ))}
-          </Table.Row>
-        ))}
+        {table.getRowModel().rows.map((row) => {
+          const selected = row.getIsSelected();
+          return (
+            <Table.Row
+              key={row.id}
+              onClick={() => onRowClick?.(row)}
+              onMouseEnter={() => onRowMouseEnter?.(row)}
+              bg={selected ? 'teal.50' : onRowClick ? 'gray.50' : undefined}
+              _dark={{ bg: selected ? 'teal.900' : onRowClick ? 'gray.900' : undefined }}
+              _hover={onRowClick ? { bg: selected ? 'teal.100' : 'gray.100', _dark: { bg: selected ? 'teal.800' : 'gray.800' } } : undefined}
+              {...getRowProps?.(row)}
+            >
+              {row.getVisibleCells().map((cell) => (
+                <Table.Cell key={cell.id} {...getCellProps?.(cell)}>
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </Table.Cell>
+              ))}
+            </Table.Row>
+          );
+        })}
       </Table.Body>
     </Table.Root>
   );

@@ -20,7 +20,7 @@ export default function Category() {
 
   return (
     <Box borderWidth="1px" borderRadius="lg" overflow="auto" maxH="calc(100vh - 260px)">
-      <MaterialsTable items={category.items} onRowClick={(item) => setSelectedItem(item)} />
+      <MaterialsTable categoryId={category.id} items={category.items} onRowClick={(item) => setSelectedItem(item)} />
       <MaterialItemDrawer
         categoryId={category.id}
         item={selectedItem}

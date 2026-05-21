@@ -12,10 +12,7 @@ import PageHeader from '@/ui/page-header/page-header';
 import RouteTabs from '@/ui/route-tabs/route-tabs';
 import UiExtrasMenu from '@/ui/extras-menu/extras-menu';
 import useUiToast from '@/ui/toast/use-ui-toast';
-
-function formatMoney(value: number) {
-  return `${value.toLocaleString()}`;
-}
+import { formatMoney } from '@/utils/format-money';
 
 function parseMoney(value: string): number {
   return parseFloat(value.replace(/[$,]/g, '')) || 0;
