@@ -3,7 +3,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
 import Icon from '@/ui/icon/icon';
 import UiTable from '@/ui/table/table';
-import { DocumentFolder } from '@/store/types';
+import { DocumentFile, DocumentFolder } from '@/store/types';
 
 interface DocRow {
   key: string;
@@ -19,13 +19,10 @@ interface DocRow {
 
 interface DocumentsTableProps {
   folders: DocumentFolder[];
+  onFileClick?: (file: DocumentFile) => void;
 }
 
-function isPreviewable(mimeType: string) {
-  return mimeType.startsWith('image/') || mimeType === 'application/pdf';
-}
-
-export default function DocumentsTable({ folders }: DocumentsTableProps) {
+export default function DocumentsTable({ folders, onFileClick }: DocumentsTableProps) {
   const [expandedFolderIds, setExpandedFolderIds] = useState<Set<string>>(new Set(folders.map((f) => f.id)));
 
   const data = useMemo<DocRow[]>(() => {
@@ -117,15 +114,16 @@ export default function DocumentsTable({ folders }: DocumentsTableProps) {
             else next.add(row.original.id);
             return next;
           });
-        } else if (row.original.url) {
-          if (isPreviewable(row.original.mimeType)) {
-            window.open(row.original.url, '_blank', 'noopener,noreferrer');
-          } else {
-            const a = document.createElement('a');
-            a.href = row.original.url;
-            a.download = row.original.name;
-            a.click();
-          }
+        } else {
+          onFileClick?.({
+            id: row.original.id,
+            folderId: row.original.folderId,
+            name: row.original.name,
+            tags: row.original.tags,
+            modified: row.original.modified,
+            url: row.original.url,
+            mimeType: row.original.mimeType,
+          });
         }
       }}
       getRowProps={(row) => ({
