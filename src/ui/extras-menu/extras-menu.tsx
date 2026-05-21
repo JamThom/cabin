@@ -22,10 +22,12 @@ export interface MenuOption {
 
 interface UiExtrasMenuProps {
   options: MenuOption[];
+  variant?: 'default' | 'inline';
 }
 
-export default function UiExtrasMenu({ options }: UiExtrasMenuProps) {
+export default function UiExtrasMenu({ options, variant = 'default' }: UiExtrasMenuProps) {
   const [activePrompt, setActivePrompt] = useState<{ config: MenuOptionPrompt; value: string } | null>(null);
+  const inline = variant === 'inline';
 
   function handleItemClick(option: MenuOption) {
     if (option.prompt) {
@@ -45,7 +47,15 @@ export default function UiExtrasMenu({ options }: UiExtrasMenuProps) {
     <>
       <Menu.Root>
         <Menu.Trigger asChild>
-          <IconButton bg="white" borderWidth="1px" borderColor="gray.200" aria-label="More options" size="sm" variant="ghost">
+          <IconButton
+            aria-label="More options"
+            size="sm"
+            variant={inline ? ('inline' as any) : 'ghost'}
+            bg={inline ? 'transparent' : 'white'}
+            borderWidth={inline ? '0' : '1px'}
+            borderColor={inline ? 'transparent' : 'gray.200'}
+            p={inline ? 0 : undefined}
+          >
             <FontAwesomeIcon icon={faEllipsisVertical} />
           </IconButton>
         </Menu.Trigger>

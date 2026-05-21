@@ -20,11 +20,12 @@ interface UiTableProps<TData extends object> {
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: OnChangeFn<RowSelectionState>;
   onRowMouseEnter?: (row: Row<TData>) => void;
+  onRowMouseLeave?: (row: Row<TData>) => void;
 }
 
 export default function UiTable<TData extends object>({
   data, columns, onRowClick, getRowProps, getCellProps,
-  rowSelection, onRowSelectionChange, onRowMouseEnter,
+  rowSelection, onRowSelectionChange, onRowMouseEnter, onRowMouseLeave,
 }: UiTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -85,6 +86,7 @@ export default function UiTable<TData extends object>({
               key={row.id}
               onClick={() => onRowClick?.(row)}
               onMouseEnter={() => onRowMouseEnter?.(row)}
+              onMouseLeave={() => onRowMouseLeave?.(row)}
               bg={selected ? 'teal.50' : onRowClick ? 'gray.50' : undefined}
               _dark={{ bg: selected ? 'teal.900' : onRowClick ? 'gray.900' : undefined }}
               _hover={onRowClick ? { bg: selected ? 'teal.100' : 'gray.100', _dark: { bg: selected ? 'teal.800' : 'gray.800' } } : undefined}

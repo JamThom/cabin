@@ -326,6 +326,26 @@ export default {
       });
     }
 
+    const documentDelete = pathname.match(/^\/api\/documents\/([^/]+)$/);
+    if (method === 'DELETE' && documentDelete) {
+      const fileId = documentDelete[1];
+      const state = await getState(db);
+      if (!state.documentFolders) state.documentFolders = [];
+      let removed = false;
+      state.documentFolders.forEach((folder) => {
+        const files = Array.isArray(folder.files) ? folder.files : [];
+        const next = files.filter((file) => file.id !== fileId);
+        if (next.length !== files.length) removed = true;
+        folder.files = next;
+      });
+      if (!removed) return json({ error: 'Not found' }, 404);
+      if (state.documentBlobById?.[fileId]) {
+        delete state.documentBlobById[fileId];
+      }
+      await saveState(db, state);
+      return noContent();
+    }
+
     // POST /api/documents/folders
     if (method === 'POST' && pathname === '/api/documents/folders') {
       const body = await request.json();

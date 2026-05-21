@@ -85,6 +85,21 @@ const config = defineConfig({
                 transform: 'scale(0.97)',
               },
             },
+            inline: {
+              background: 'transparent',
+              borderWidth: '0',
+              padding: '0',
+              minW: 'auto',
+              w: 'auto',
+              h: 'auto',
+              _hover: {
+                background: 'transparent',
+              },
+              _active: {
+                opacity: 0.7,
+                transform: 'scale(0.97)',
+              },
+            },
           },
         },
       },

@@ -7,9 +7,11 @@ import { API_BASE_URL } from '@/api/hooks/request';
 type Props = {
   file: (DocumentFile & { folderName: string }) | null;
   onClose: () => void;
+  onDelete: (file: DocumentFile) => Promise<void>;
+  deleting?: boolean;
 };
 
-export default function DocumentDrawer({ file, onClose }: Props) {
+export default function DocumentDrawer({ file, onClose, onDelete, deleting }: Props) {
   const resolvedUrl = file ? (`${API_BASE_URL}/api/documents/files/${file.id}`) : '';
 
   return (
@@ -32,9 +34,20 @@ export default function DocumentDrawer({ file, onClose }: Props) {
               </Stack>
             </Drawer.Body>
             <Drawer.Footer borderTopWidth="1px" gap={2}>
+              <UiButton
+                colorPalette="red"
+                variant="outline"
+                disabled={!file || deleting}
+                onClick={async () => {
+                  if (!file) return;
+                  await onDelete(file);
+                }}
+              >
+                Delete
+              </UiButton>
               <UiButton variant="ghost" onClick={onClose}>Close</UiButton>
               <UiButton
-                disabled={!resolvedUrl}
+                disabled={!resolvedUrl || deleting}
                 onClick={() => {
                   if (!resolvedUrl) return;
                   window.open(resolvedUrl, '_blank', 'noopener,noreferrer');

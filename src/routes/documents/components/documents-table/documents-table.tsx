@@ -1,7 +1,8 @@
-import { Badge, Stack } from '@chakra-ui/react';
+import { Box, Badge, Stack } from '@chakra-ui/react';
 import { ColumnDef } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
 import Icon from '@/ui/icon/icon';
+import UiExtrasMenu from '@/ui/extras-menu/extras-menu';
 import UiTable from '@/ui/table/table';
 import { DocumentFile, DocumentFolder } from '@/store/types';
 
@@ -19,10 +20,12 @@ interface DocRow {
 interface DocumentsTableProps {
   folders: DocumentFolder[];
   onFileClick?: (file: DocumentFile) => void;
+  onFolderUploadClick?: (folderId: string) => void;
 }
 
-export default function DocumentsTable({ folders, onFileClick }: DocumentsTableProps) {
+export default function DocumentsTable({ folders, onFileClick, onFolderUploadClick }: DocumentsTableProps) {
   const [expandedFolderIds, setExpandedFolderIds] = useState<Set<string>>(new Set(folders.map((f) => f.id)));
+  const [hoveredFolderId, setHoveredFolderId] = useState<string | null>(null);
 
   const data = useMemo<DocRow[]>(() => {
     const rows: DocRow[] = [];
@@ -94,9 +97,36 @@ export default function DocumentsTable({ folders, onFileClick }: DocumentsTableP
         accessorKey: 'modified',
         header: 'Modified',
         cell: ({ row }) => row.original.modified || null
+      },
+      {
+        id: 'actions',
+        header: '',
+        enableSorting: false,
+        cell: ({ row }) => {
+          if (row.original.type !== 'folder') return null;
+          const visible = hoveredFolderId === row.original.id;
+          return (
+            <Box
+              display="flex"
+              justifyContent="flex-end"
+              visibility={visible ? 'visible' : 'hidden'}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <UiExtrasMenu
+                variant="inline"
+                options={[
+                  { label: 'Delete', onClick: () => {} },
+                  { label: 'Rename', onClick: () => {} },
+                  { label: 'Add Subfolder', onClick: () => {} },
+                  { label: 'Upload', onClick: () => onFolderUploadClick?.(row.original.id) },
+                ]}
+              />
+            </Box>
+          );
+        }
       }
     ],
-    [expandedFolderIds]
+    [expandedFolderIds, hoveredFolderId, onFolderUploadClick]
   );
 
   return (
@@ -122,6 +152,10 @@ export default function DocumentsTable({ folders, onFileClick }: DocumentsTableP
           });
         }
       }}
+      onRowMouseEnter={(row) => {
+        if (row.original.type === 'folder') setHoveredFolderId(row.original.id);
+      }}
+      onRowMouseLeave={() => setHoveredFolderId(null)}
       getRowProps={(row) => ({
         key: row.original.key,
         cursor: 'pointer',
@@ -130,7 +164,9 @@ export default function DocumentsTable({ folders, onFileClick }: DocumentsTableP
         _dark: row.original.type === 'folder' ? { bg: 'gray.800' } : undefined
       })}
       getCellProps={(cell) => ({
-        pl: cell.column.id === 'name' && cell.row.original.type === 'file' ? 10 : undefined
+        pl: cell.column.id === 'name' && cell.row.original.type === 'file' ? 10 : undefined,
+        w: cell.column.id === 'actions' ? '1%' : undefined,
+        whiteSpace: cell.column.id === 'actions' ? 'nowrap' : undefined,
       })}
     />
   );

@@ -1,18 +1,29 @@
 import { Box, Dialog, Input, Portal, Stack, Text } from '@chakra-ui/react';
 import UiButton from '@/ui/button/button';
-import { DragEvent, useRef, useState } from 'react';
+import { DragEvent, useEffect, useRef, useState } from 'react';
 import { DocumentFolder } from '@/store/types';
 import useDocumentFoldersCreate from '@/api/hooks/documents/use-document-folders-create';
 
 interface UploadModalProps {
   folders: DocumentFolder[];
   onUpload: (payload: { file: File; folderId: string; tags: string[] }) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  preselectedFolderId?: string;
+  hideTrigger?: boolean;
 }
 
 const NEW_FOLDER_VALUE = '__new__';
 
-export default function UploadModal({ folders, onUpload }: UploadModalProps) {
-  const [open, setOpen] = useState(false);
+export default function UploadModal({
+  folders,
+  onUpload,
+  open,
+  onOpenChange,
+  preselectedFolderId,
+  hideTrigger,
+}: UploadModalProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [folderId, setFolderId] = useState('');
@@ -20,6 +31,20 @@ export default function UploadModal({ folders, onUpload }: UploadModalProps) {
   const [newFolderName, setNewFolderName] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const createFolder = useDocumentFoldersCreate();
+  const isOpen = open ?? internalOpen;
+
+  useEffect(() => {
+    if (isOpen && preselectedFolderId) {
+      setFolderId(preselectedFolderId);
+    }
+  }, [isOpen, preselectedFolderId]);
+
+  function setModalOpen(nextOpen: boolean) {
+    if (open === undefined) {
+      setInternalOpen(nextOpen);
+    }
+    onOpenChange?.(nextOpen);
+  }
 
   function handleDrop(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
@@ -45,7 +70,7 @@ export default function UploadModal({ folders, onUpload }: UploadModalProps) {
     setFolderId('');
     setTags('');
     setNewFolderName('');
-    setOpen(false);
+    setModalOpen(false);
   }
 
   function handleFolderChange(value: string) {
@@ -58,17 +83,19 @@ export default function UploadModal({ folders, onUpload }: UploadModalProps) {
     setFolderId('');
     setTags('');
     setNewFolderName('');
-    setOpen(false);
+    setModalOpen(false);
   }
 
   const uploadDisabled = !file || !folderId || (folderId === NEW_FOLDER_VALUE && !newFolderName.trim());
 
   return (
     <>
-      <UiButton size="sm" icon="upload" onClick={() => setOpen(true)}>
-        Upload Document
-      </UiButton>
-      <Dialog.Root open={open} onOpenChange={(event) => { if (!event.open) handleClose(); }} placement="center">
+      {!hideTrigger && (
+        <UiButton size="sm" icon="upload" onClick={() => setModalOpen(true)}>
+          Upload Document
+        </UiButton>
+      )}
+      <Dialog.Root open={isOpen} onOpenChange={(event) => { if (!event.open) handleClose(); }} placement="center">
         <Portal>
           <Dialog.Backdrop />
           <Dialog.Positioner>
