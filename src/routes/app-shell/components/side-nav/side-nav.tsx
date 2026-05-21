@@ -20,9 +20,28 @@ export default function SideNav() {
   const location = useLocation();
 
   return (
-    <Box w="64px" bg="white" borderRightWidth="1px" p={3} pt={1} display="flex" flexDir="column" alignItems="center">
-      <Box fontSize="xl" mb={4} mt={1}>🏕️</Box>
-      <Stack gap={2} alignItems="center">
+    <Box
+      w="64px"
+      bg="white"
+      borderRightWidth="1px"
+      p={3}
+      pt={1}
+      display="flex"
+      alignItems="center"
+      justifyContent={{ base: 'space-between', md: 'flex-start' }}
+      width={{ base: 'unset', md: '64px' }}
+      flexDir={{ base: 'row', md: 'column' }}
+    >
+      <Box display={{
+        base: 'unset', md: 'none'
+      }} fontSize="xl" mb={4} mt={1}>🏕️</Box>
+      <Stack
+        gap={2}
+        alignItems="center"
+        flex={{ base: '1', md: 'unset' }}
+        justifyContent={{ base: 'space-between', md: 'flex-start' }}
+        flexDir={{ base: 'row', md: 'column' }}
+      >
         {navItems.map((item) => (
           <UiIconButton
             key={item.path}

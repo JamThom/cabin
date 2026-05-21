@@ -1,4 +1,4 @@
-import { Box, Stack } from '@chakra-ui/react';
+import { Stack } from '@chakra-ui/react';
 import { ReactNode } from 'react';
 
 type Props = {
@@ -7,7 +7,7 @@ type Props = {
 
 export default function PageLayout({ children }: Props) {
   return (
-    <Stack h="100vh" w="100%" maxW="100vw" mx="auto" py={10} px={4}>
+    <Stack h={{ base: 'auto', md: '100vh' }} w="100%" maxW="100vw" mx="auto" py={{ base: 4, md: 10 }} px={4}>
       {children}
     </Stack>
   );
