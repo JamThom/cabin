@@ -42,7 +42,7 @@ export default function Materials() {
   return (
     <PageLayout>
       <PageHeader
-        title="Materials"
+        title={<>Materials <Badge>Est cost: {formatMoney(categories.reduce((sum, cat) => sum + cat.items.reduce((s, item) => s + item.cost * item.quantity, 0), 0))}</Badge></>}
         action={
           <UiButton
             size="sm"
