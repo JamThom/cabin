@@ -1,10 +1,12 @@
 import { Box, Badge, Stack } from '@chakra-ui/react';
 import { ColumnDef } from '@tanstack/react-table';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Icon from '@/ui/icon/icon';
 import UiExtrasMenu from '@/ui/extras-menu/extras-menu';
 import UiTable from '@/ui/table/table';
 import { DocumentFile, DocumentFolder } from '@/store/types';
+import { API_BASE_URL } from '@/api/hooks/request';
+import isPreviewableDocumentMimeType from '@/utils/is-previewable-document-mime-type';
 
 interface DocRow {
   key: string;
@@ -15,21 +17,51 @@ interface DocRow {
   tags: string[];
   modified: string;
   mimeType: string;
+  depth: number;
+  indent: number;
 }
 
 interface DocumentsTableProps {
   folders: DocumentFolder[];
   onFileClick?: (file: DocumentFile) => void;
+  onFilePreview?: (file: DocumentFile) => void;
+  onFileDelete?: (file: DocumentFile) => void | Promise<void>;
   onFolderUploadClick?: (folderId: string) => void;
+  onFolderAddSubfolder?: (parentFolderId: string, name: string) => void | Promise<void>;
 }
 
-export default function DocumentsTable({ folders, onFileClick, onFolderUploadClick }: DocumentsTableProps) {
+function sortByName<T extends { name: string }>(items: T[]) {
+  return [...items].sort((left, right) => left.name.localeCompare(right.name));
+}
+
+export default function DocumentsTable({ folders, onFileClick, onFilePreview, onFileDelete, onFolderUploadClick, onFolderAddSubfolder }: DocumentsTableProps) {
   const [expandedFolderIds, setExpandedFolderIds] = useState<Set<string>>(new Set(folders.map((f) => f.id)));
-  const [hoveredFolderId, setHoveredFolderId] = useState<string | null>(null);
+  const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
+  const seenFolderIds = useRef<Set<string>>(new Set(folders.map((folder) => folder.id)));
+
+  useEffect(() => {
+    setExpandedFolderIds((prev) => {
+      const next = new Set(prev);
+      folders.forEach((folder) => {
+        if (!seenFolderIds.current.has(folder.id)) next.add(folder.id);
+      });
+      return next;
+    });
+    seenFolderIds.current = new Set(folders.map((folder) => folder.id));
+  }, [folders]);
 
   const data = useMemo<DocRow[]>(() => {
-    const rows: DocRow[] = [];
+    const groupedByParent = new Map<string | null, DocumentFolder[]>();
     folders.forEach((folder) => {
+      const parentId = folder.parentDirectoryId ?? null;
+      const group = groupedByParent.get(parentId) ?? [];
+      group.push(folder);
+      groupedByParent.set(parentId, group);
+    });
+
+    const rows: DocRow[] = [];
+
+    function addFolder(folder: DocumentFolder, depth: number) {
       rows.push({
         key: `folder-${folder.id}`,
         id: folder.id,
@@ -38,23 +70,31 @@ export default function DocumentsTable({ folders, onFileClick, onFolderUploadCli
         name: folder.name,
         tags: [],
         modified: '',
-        mimeType: ''
+        mimeType: '',
+        depth,
+        indent: depth * 12,
       });
-      if (expandedFolderIds.has(folder.id)) {
-        folder.files.forEach((file) => {
-          rows.push({
-            key: `file-${file.id}`,
-            id: file.id,
-            type: 'file',
-            folderId: folder.id,
-            name: file.name,
-            tags: file.tags,
-            modified: file.modified,
-            mimeType: file.mimeType
-          });
+
+      if (!expandedFolderIds.has(folder.id)) return;
+
+      sortByName(groupedByParent.get(folder.id) ?? []).forEach((childFolder) => addFolder(childFolder, depth + 1));
+      sortByName(folder.files).forEach((file) => {
+        rows.push({
+          key: `file-${file.id}`,
+          id: file.id,
+          type: 'file',
+          folderId: folder.id,
+          name: file.name,
+          tags: file.tags,
+          modified: file.modified,
+          mimeType: file.mimeType,
+          depth: depth + 1,
+          indent: depth * 12 + 8,
         });
-      }
-    });
+      });
+    }
+
+    sortByName(groupedByParent.get(null) ?? []).forEach((folder) => addFolder(folder, 0));
     return rows;
   }, [expandedFolderIds, folders]);
 
@@ -103,8 +143,8 @@ export default function DocumentsTable({ folders, onFileClick, onFolderUploadCli
         header: '',
         enableSorting: false,
         cell: ({ row }) => {
-          if (row.original.type !== 'folder') return null;
-          const visible = hoveredFolderId === row.original.id;
+          const visible = hoveredRowId === row.original.key;
+          if (!visible) return null;
           return (
             <Box
               display="flex"
@@ -114,11 +154,26 @@ export default function DocumentsTable({ folders, onFileClick, onFolderUploadCli
             >
               <UiExtrasMenu
                 variant="inline"
-                options={[
+                options={row.original.type === 'folder' ? [
                   { label: 'Delete', onClick: () => {} },
                   { label: 'Rename', onClick: () => {} },
-                  { label: 'Add Subfolder', onClick: () => {} },
+                  {
+                    label: 'Add Subfolder',
+                    prompt: {
+                      title: 'Add Subfolder',
+                      placeholder: 'Subfolder name',
+                      confirmLabel: 'Add',
+                      onConfirm: async (name) => onFolderAddSubfolder?.(row.original.id, name),
+                    },
+                  },
                   { label: 'Upload', onClick: () => onFolderUploadClick?.(row.original.id) },
+                ] : [
+                  {
+                    label: 'Download',
+                    onClick: () => window.open(`${API_BASE_URL}/api/documents/files/${row.original.id}`, '_blank', 'noopener,noreferrer')
+                  },
+                  { label: 'Delete', onClick: () => onFileDelete?.(row.original) },
+                  ...(isPreviewableDocumentMimeType(row.original.mimeType) ? [{ label: 'Preview', onClick: () => onFilePreview?.(row.original) }] : []),
                 ]}
               />
             </Box>
@@ -126,7 +181,7 @@ export default function DocumentsTable({ folders, onFileClick, onFolderUploadCli
         }
       }
     ],
-    [expandedFolderIds, hoveredFolderId, onFolderUploadClick]
+    [expandedFolderIds, hoveredRowId, onFileClick, onFileDelete, onFilePreview, onFolderAddSubfolder, onFolderUploadClick]
   );
 
   return (
@@ -152,10 +207,8 @@ export default function DocumentsTable({ folders, onFileClick, onFolderUploadCli
           });
         }
       }}
-      onRowMouseEnter={(row) => {
-        if (row.original.type === 'folder') setHoveredFolderId(row.original.id);
-      }}
-      onRowMouseLeave={() => setHoveredFolderId(null)}
+      onRowMouseEnter={(row) => setHoveredRowId(row.original.key)}
+      onRowMouseLeave={() => setHoveredRowId(null)}
       getRowProps={(row) => ({
         key: row.original.key,
         cursor: 'pointer',
@@ -164,7 +217,7 @@ export default function DocumentsTable({ folders, onFileClick, onFolderUploadCli
         _dark: row.original.type === 'folder' ? { bg: 'gray.800' } : undefined
       })}
       getCellProps={(cell) => ({
-        pl: cell.column.id === 'name' && cell.row.original.type === 'file' ? 10 : undefined,
+        pl: cell.column.id === 'name' ? cell.row.original.indent : undefined,
         w: cell.column.id === 'actions' ? '1%' : undefined,
         whiteSpace: cell.column.id === 'actions' ? 'nowrap' : undefined,
       })}

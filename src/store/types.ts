@@ -26,5 +26,6 @@ export interface DocumentFile {
 export interface DocumentFolder {
   id: string;
   name: string;
+  parentDirectoryId?: string | null;
   files: DocumentFile[];
 }

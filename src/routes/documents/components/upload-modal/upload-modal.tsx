@@ -58,7 +58,7 @@ export default function UploadModal({
     let resolvedFolderId = folderId;
     if (folderId === NEW_FOLDER_VALUE) {
       if (!newFolderName.trim()) return;
-      const folder = await createFolder.mutateAsync(newFolderName.trim());
+      const folder = await createFolder.mutateAsync({ name: newFolderName.trim() });
       resolvedFolderId = folder.id;
     }
     onUpload({

@@ -351,7 +351,7 @@ export default {
       const body = await request.json();
       const state = await getState(db);
       if (!state.documentFolders) state.documentFolders = [];
-      const folder = { id: crypto_uuid(), name: body.name, files: [] };
+      const folder = { id: crypto_uuid(), name: body.name, parentDirectoryId: body.parentDirectoryId ?? null, files: [] };
       state.documentFolders.push(folder);
       await saveState(db, state);
       return json(folder, 201);
