@@ -210,12 +210,12 @@ export default function DocumentsTable({ folders, onFileClick, onFilePreview, on
       onRowMouseEnter={(row) => setHoveredRowId(row.original.key)}
       onRowMouseLeave={() => setHoveredRowId(null)}
       getRowProps={(row) => ({
-        key: row.original.key,
         cursor: 'pointer',
         fontWeight: row.original.type === 'folder' ? 'semibold' : 'normal',
         bg: row.original.type === 'folder' ? 'gray.50' : undefined,
         _dark: row.original.type === 'folder' ? { bg: 'gray.800' } : undefined
       })}
+      getRowKey={(row) => row.original.key}
       getCellProps={(cell) => ({
         pl: cell.column.id === 'name' ? cell.row.original.indent : undefined,
         w: cell.column.id === 'actions' ? '1%' : undefined,

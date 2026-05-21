@@ -16,6 +16,7 @@ interface UiTableProps<TData extends object> {
   columns: ColumnDef<TData>[];
   onRowClick?: (row: Row<TData>) => void;
   getRowProps?: (row: Row<TData>) => UiTableRowProps;
+  getRowKey?: (row: Row<TData>) => string;
   getCellProps?: (cell: Cell<TData, unknown>) => UiTableCellProps;
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: OnChangeFn<RowSelectionState>;
@@ -24,7 +25,7 @@ interface UiTableProps<TData extends object> {
 }
 
 export default function UiTable<TData extends object>({
-  data, columns, onRowClick, getRowProps, getCellProps,
+  data, columns, onRowClick, getRowProps, getRowKey, getCellProps,
   rowSelection, onRowSelectionChange, onRowMouseEnter, onRowMouseLeave,
 }: UiTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -81,9 +82,10 @@ export default function UiTable<TData extends object>({
       <Table.Body>
         {table.getRowModel().rows.map((row) => {
           const selected = row.getIsSelected();
+          const rowKey = getRowKey?.(row) ?? row.id;
           return (
             <Table.Row
-              key={row.id}
+              key={rowKey}
               onClick={() => onRowClick?.(row)}
               onMouseEnter={() => onRowMouseEnter?.(row)}
               onMouseLeave={() => onRowMouseLeave?.(row)}
