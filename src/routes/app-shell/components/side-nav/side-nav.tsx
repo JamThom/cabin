@@ -33,7 +33,7 @@ export default function SideNav() {
       flexDir={{ base: 'row', md: 'column' }}
     >
       <Box display={{
-        base: 'unset', md: 'none'
+        base: 'none', md: 'unset'
       }} fontSize="xl" mb={4} mt={1}>🏕️</Box>
       <Stack
         gap={2}
@@ -44,6 +44,7 @@ export default function SideNav() {
       >
         {navItems.map((item) => (
           <UiIconButton
+            flex={{ base: '1', md: 'unset' }}
             key={item.path}
             icon={item.icon}
             label={item.label}

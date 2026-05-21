@@ -1,6 +1,12 @@
-import { Stack, Tabs, useBreakpointValue } from '@chakra-ui/react';
+import { Flex, Stack, Tabs, useBreakpointValue } from '@chakra-ui/react';
 import { Children, cloneElement, isValidElement, ReactElement, ReactNode, useEffect, useMemo, useState } from 'react';
-import UiIconButton from '@/ui/icon-button/icon-button';
+import Icon from '@/ui/icon/icon';
+
+type TabItemProps = {
+  value: string;
+  flex?: number;
+  justifyContent?: string;
+};
 
 type Props = {
   value: string | undefined;
@@ -12,24 +18,33 @@ type Props = {
 export default function RouteTabs({ value, onValueChange, action, children }: Props) {
   const isMobile = useBreakpointValue({ base: true, md: false }) ?? false;
   const tabItems = useMemo(
-    () => Children.toArray(children).filter(isValidElement) as ReactElement[],
+    () => Children.toArray(children).filter((child): child is ReactElement<TabItemProps> => isValidElement<TabItemProps>(child)),
     [children],
   );
   const [mobileStart, setMobileStart] = useState(0);
   const pageSize = 2;
   const stepSize = 1;
   const maxStart = Math.max(0, tabItems.length - pageSize);
+  const activeIndex = tabItems.findIndex((item) => String(item.props.value) === String(value));
+  const prevIndex = activeIndex > 0 ? activeIndex - stepSize : -1;
+  const nextIndex = activeIndex >= 0 && activeIndex < tabItems.length - 1 ? activeIndex + stepSize : -1;
+  const prevValue = prevIndex >= 0 ? String(tabItems[prevIndex].props.value) : '';
+  const nextValue = nextIndex >= 0 ? String(tabItems[nextIndex].props.value) : '';
 
   useEffect(() => {
     setMobileStart((current) => Math.min(current, maxStart));
   }, [maxStart]);
 
   useEffect(() => {
-    const activeIndex = tabItems.findIndex((item) => String(item.props.value) === String(value));
     if (activeIndex < 0) return;
-    const nextStart = Math.floor(activeIndex / pageSize) * pageSize;
-    setMobileStart((current) => (current === nextStart ? current : Math.min(nextStart, maxStart)));
-  }, [maxStart, tabItems, value]);
+    if (activeIndex < mobileStart) {
+      setMobileStart(activeIndex);
+      return;
+    }
+    if (activeIndex > mobileStart + pageSize - 1) {
+      setMobileStart(Math.min(activeIndex - (pageSize - 1), maxStart));
+    }
+  }, [activeIndex, maxStart, mobileStart]);
 
   const visibleMobileTabs = tabItems.slice(mobileStart, mobileStart + pageSize).map((item) => (
     cloneElement(item, {
@@ -40,7 +55,7 @@ export default function RouteTabs({ value, onValueChange, action, children }: Pr
   ));
 
   return (
-    <Stack direction={{ base: 'column', md: 'row' }} align={{ base: 'stretch', md: 'center' }} justify="space-between" mb={6} gap={3}>
+    <Flex align={{ base: 'stretch', md: 'center' }} justify="space-between" mb={6} gap={3}>
       <Tabs.Root
         w="100%"
         flex="1"
@@ -52,32 +67,32 @@ export default function RouteTabs({ value, onValueChange, action, children }: Pr
       >
         {isMobile ? (
           <Stack direction="row" align="center" gap={2} w="100%">
-            <UiIconButton
-              icon="chevron-right"
-              label="Previous tabs"
-              variant="outline"
-              colorPalette="teal"
-              transform="rotate(180deg)"
-              onClick={() => setMobileStart((current) => Math.max(0, current - stepSize))}
-              disabled={mobileStart === 0}
-            />
-            <Tabs.List w="100%" display="flex" flex="1">
+            <Tabs.List w="100%" display="flex" flex="1" gap={2}>
+              {prevIndex >= 0 && (
+                <Tabs.Trigger
+                  value={prevValue}
+                  transform="rotate(180deg)"
+                  onClick={() => setMobileStart((current) => Math.max(0, current - stepSize))}
+                >
+                  <Icon name="chevron-right" />
+                </Tabs.Trigger>
+              )}
               {visibleMobileTabs}
+              {nextIndex >= 0 && (
+                <Tabs.Trigger
+                  value={nextValue}
+                  onClick={() => setMobileStart((current) => Math.min(maxStart, current + stepSize))}
+                >
+                  <Icon name="chevron-right" />
+                </Tabs.Trigger>
+              )}
             </Tabs.List>
-            <UiIconButton
-              icon="chevron-right"
-              label="Next tabs"
-              variant="outline"
-              colorPalette="teal"
-              onClick={() => setMobileStart((current) => Math.min(maxStart, current + stepSize))}
-              disabled={mobileStart >= maxStart}
-            />
           </Stack>
         ) : (
           <Tabs.List>{children}</Tabs.List>
         )}
       </Tabs.Root>
       {action}
-    </Stack>
+    </Flex>
   );
 }

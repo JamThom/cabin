@@ -301,6 +301,27 @@ export default {
       return json(folder, 201);
     }
 
+    // POST /api/documents/upload
+    if (method === 'POST' && pathname === '/api/documents/upload') {
+      const body = await request.json();
+      const state = await getState(db);
+      if (!state.documentFolders) state.documentFolders = [];
+      const folder = state.documentFolders.find((f) => f.id === body.folderId);
+      if (!folder) return json({ error: 'Folder not found' }, 404);
+      const file = {
+        id: crypto_uuid(),
+        folderId: body.folderId,
+        name: body.name,
+        tags: Array.isArray(body.tags) ? body.tags : [],
+        modified: new Date().toISOString(),
+        url: body.url || '',
+        mimeType: body.mimeType || 'application/octet-stream',
+      };
+      folder.files.push(file);
+      await saveState(db, state);
+      return json(file, 201);
+    }
+
     return json({ error: 'Not found' }, 404);
   },
 };
