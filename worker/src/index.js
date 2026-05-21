@@ -51,6 +51,18 @@ async function saveState(db, state) {
   await db.prepare('UPDATE app_state SET state = ?, updated_at = ? WHERE id = 1').bind(JSON.stringify(state), new Date().toISOString()).run();
 }
 
+async function ensureDocumentBlobTable(db) {
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS document_blobs (
+      file_id TEXT PRIMARY KEY,
+      mime_type TEXT NOT NULL,
+      name TEXT NOT NULL,
+      bytes BLOB NOT NULL,
+      created_at TEXT NOT NULL
+    )
+  `).run();
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -311,6 +323,24 @@ export default {
     const documentFileGet = pathname.match(/^\/api\/documents\/files\/([^/]+)$/);
     if (method === 'GET' && documentFileGet) {
       const fileId = documentFileGet[1];
+      await ensureDocumentBlobTable(db);
+      const blobRow = await db
+        .prepare('SELECT mime_type, name, bytes FROM document_blobs WHERE file_id = ?')
+        .bind(fileId)
+        .first();
+
+      if (blobRow) {
+        const filename = encodeURIComponent(blobRow.name || `document-${fileId}`);
+        return new Response(blobRow.bytes, {
+          status: 200,
+          headers: {
+            ...CORS_HEADERS,
+            'Content-Type': blobRow.mime_type || 'application/octet-stream',
+            'Content-Disposition': `inline; filename*=UTF-8''${filename}`,
+          },
+        });
+      }
+
       const state = await getState(db);
       const blob = state.documentBlobById?.[fileId];
       if (!blob) return json({ error: 'File content not found' }, 404);
@@ -330,6 +360,7 @@ export default {
     if (method === 'DELETE' && documentDelete) {
       const fileId = documentDelete[1];
       const state = await getState(db);
+      await ensureDocumentBlobTable(db);
       if (!state.documentFolders) state.documentFolders = [];
       let removed = false;
       state.documentFolders.forEach((folder) => {
@@ -339,6 +370,7 @@ export default {
         folder.files = next;
       });
       if (!removed) return json({ error: 'Not found' }, 404);
+      await db.prepare('DELETE FROM document_blobs WHERE file_id = ?').bind(fileId).run();
       if (state.documentBlobById?.[fileId]) {
         delete state.documentBlobById[fileId];
       }
@@ -361,6 +393,7 @@ export default {
     if (method === 'POST' && pathname === '/api/documents/upload') {
       try {
         const state = await getState(db);
+        await ensureDocumentBlobTable(db);
         if (!state.documentFolders) state.documentFolders = [];
         if (!state.documentBlobById) state.documentBlobById = {};
 
@@ -368,7 +401,7 @@ export default {
         let name = '';
         let tags = [];
         let mimeType = 'application/octet-stream';
-        let fileBase64 = '';
+        let fileBytes = null;
 
         const contentType = request.headers.get('content-type') || '';
         if (contentType.includes('multipart/form-data')) {
@@ -388,7 +421,10 @@ export default {
             return json({ error: 'A multipart file field named "file" is required' }, 400);
           }
           const fileBuffer = await filePart.arrayBuffer();
-          fileBase64 = uint8ToBase64(new Uint8Array(fileBuffer));
+          fileBytes = new Uint8Array(fileBuffer);
+          if (!fileBytes.length) {
+            return json({ error: 'Uploaded file is empty' }, 400);
+          }
           if (!name) name = filePart.name || 'document';
           if (!mimeType || mimeType === 'application/octet-stream') {
             mimeType = filePart.type || 'application/octet-stream';
@@ -402,13 +438,19 @@ export default {
         }
 
         if (!folderId) return json({ error: 'folderId is required' }, 400);
+        if (!fileBytes?.length) {
+          return json({ error: 'A multipart file with content is required' }, 400);
+        }
         const folder = state.documentFolders.find((f) => f.id === folderId);
         if (!folder) return json({ error: 'Folder not found' }, 404);
         if (!Array.isArray(folder.files)) folder.files = [];
 
         const fileId = crypto_uuid();
-        if (fileBase64) {
-          state.documentBlobById[fileId] = { base64: fileBase64, mimeType, name };
+        if (fileBytes?.length) {
+          await db
+            .prepare('INSERT INTO document_blobs (file_id, mime_type, name, bytes, created_at) VALUES (?, ?, ?, ?, ?)')
+            .bind(fileId, mimeType, name || 'document', fileBytes, new Date().toISOString())
+            .run();
         }
         const file = {
           id: fileId,
