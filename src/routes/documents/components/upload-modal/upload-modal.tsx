@@ -66,7 +66,7 @@ export default function UploadModal({ folders, onUpload }: UploadModalProps) {
 
   return (
     <>
-      <UiButton size="sm" onClick={() => setOpen(true)}>
+      <UiButton size="sm" icon="upload" onClick={() => setOpen(true)}>
         Upload Document
       </UiButton>
       <Dialog.Root open={open} onOpenChange={(event) => { if (!event.open) handleClose(); }} placement="center">

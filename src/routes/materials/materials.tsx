@@ -46,6 +46,7 @@ export default function Materials() {
         action={
           <UiButton
             size="sm"
+            icon="plus"
             onClick={async () => {
               if (!activeCategoryId) return;
               await addItem.mutateAsync({ categoryId: activeCategoryId });

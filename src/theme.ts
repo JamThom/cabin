@@ -4,7 +4,7 @@ const config = defineConfig({
   globalCss: {
     'html, body': {
       colorScheme: 'light',
-      bg: '#F9F5FF',
+      bg: '#faf9fb',
       color: '#28262C',
     },
   },
@@ -57,7 +57,9 @@ const config = defineConfig({
     },
     recipes: {
       button: {
-        base: {},
+        base: {
+          transition: 'background 0.18s ease, opacity 0.18s ease',
+        },
         variants: {
           variant: {
             solid: {
@@ -68,6 +70,19 @@ const config = defineConfig({
               },
               _active: {
                 background: 'linear-gradient(135deg, #7B6DB8 0%, #0D1870 100%)',
+                transform: 'scale(0.97)',
+              },
+            },
+            ghost: {
+              _active: {
+                opacity: 0.7,
+                transform: 'scale(0.97)',
+              },
+            },
+            outline: {
+              _active: {
+                opacity: 0.7,
+                transform: 'scale(0.97)',
               },
             },
           },

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Table } from '@chakra-ui/react';
+import { Box, Table } from '@chakra-ui/react';
 import {
   Cell, ColumnDef, OnChangeFn, Row, RowSelectionState, SortingState,
   flexRender, getCoreRowModel, getSortedRowModel, useReactTable,
@@ -39,7 +39,8 @@ export default function UiTable<TData extends object>({
   });
 
   return (
-    <Table.Root size="sm">
+    <Box borderWidth="1px" boxShadow="lg" borderRadius="md" overflow="auto" maxH="calc(100vh - 260px)">
+    <Table.Root size="sm" overflow="hidden">
       <Table.Header>
         {table.getHeaderGroups().map((headerGroup) => (
           <Table.Row key={headerGroup.id} bg="gray.50" _dark={{ bg: 'gray.800' }}>
@@ -99,5 +100,6 @@ export default function UiTable<TData extends object>({
         })}
       </Table.Body>
     </Table.Root>
+    </Box>
   );
 }

@@ -21,6 +21,7 @@ export default function Notes() {
         action={
           <UiButton
             size="sm"
+            icon="plus"
             onClick={async () => {
               const note = await createNote.mutateAsync();
               showSuccessToast('Note created');

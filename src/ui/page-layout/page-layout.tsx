@@ -7,7 +7,7 @@ type Props = {
 
 export default function PageLayout({ children }: Props) {
   return (
-    <Stack h="100vh" w="100%" mx="auto" py={10} px={4}>
+    <Stack h="100vh" w="100%" maxW="100vw" mx="auto" py={10} px={4}>
       {children}
     </Stack>
   );

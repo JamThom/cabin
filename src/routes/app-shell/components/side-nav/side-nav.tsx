@@ -1,6 +1,6 @@
-import { Box, Stack, Text } from '@chakra-ui/react';
+import { Box, Stack } from '@chakra-ui/react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import UiButton from '@/ui/button/button';
+import UiIconButton from '@/ui/icon-button/icon-button';
 
 interface NavItem {
   path: string;
@@ -20,19 +20,17 @@ export default function SideNav() {
   const location = useLocation();
 
   return (
-    <Box w="240px" borderRightWidth="1px" p={4}>
-      <Text fontSize="lg" fontWeight="bold" mb={4}>Cabin</Text>
-      <Stack gap={2}>
+    <Box w="64px" bg="white" borderRightWidth="1px" p={3} pt={1} display="flex" flexDir="column" alignItems="center">
+      <Box fontSize="xl" mb={4} mt={1}>🏕️</Box>
+      <Stack gap={2} alignItems="center">
         {navItems.map((item) => (
-          <UiButton
+          <UiIconButton
             key={item.path}
-            justifyContent="flex-start"
-            variant={location.pathname.startsWith(item.path) ? 'solid' : 'ghost'}
             icon={item.icon}
+            label={item.label}
+            variant={location.pathname.startsWith(item.path) ? 'solid' : 'ghost'}
             onClick={() => navigate(item.path)}
-          >
-            {item.label}
-          </UiButton>
+          />
         ))}
       </Stack>
     </Box>

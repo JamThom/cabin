@@ -13,12 +13,10 @@ export default function Phase() {
 
   return (
     <>
-      <Box borderWidth="1px" borderRadius="lg" overflow="auto" maxH="calc(100vh - 260px)">
         <PhaseTasksTable
           tasks={phase.tasks}
           onRowClick={(taskId) => navigate(`/tasks/${phaseId}/task/${taskId}`)}
         />
-      </Box>
       <Outlet />
     </>
   );

@@ -45,7 +45,7 @@ export default function UiExtrasMenu({ options }: UiExtrasMenuProps) {
     <>
       <Menu.Root>
         <Menu.Trigger asChild>
-          <IconButton aria-label="More options" size="sm" variant="ghost">
+          <IconButton bg="white" borderWidth="1px" borderColor="gray.200" aria-label="More options" size="sm" variant="ghost">
             <FontAwesomeIcon icon={faEllipsisVertical} />
           </IconButton>
         </Menu.Trigger>

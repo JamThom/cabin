@@ -46,10 +46,11 @@ export default function Tasks() {
   return (
     <PageLayout>
       <PageHeader
-        title={<>Cabin Build Organiser <Badge>Est cost: {phases.reduce((sum, phase) => sum + phase.tasks.reduce((s, task) => s + parseMoney(task.costEst), 0), 0).toLocaleString()}</Badge></>}
+        title={<>Tasks <Badge>Est cost: {phases.reduce((sum, phase) => sum + phase.tasks.reduce((s, task) => s + parseMoney(task.costEst), 0), 0).toLocaleString()}</Badge></>}
         action={
           <UiButton
             size="sm"
+            icon="plus"
             onClick={async () => {
               if (!activePhaseId) return;
               const task = await addTask.mutateAsync({ phaseId: activePhaseId });
