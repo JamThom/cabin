@@ -102,7 +102,7 @@ export default function Tasks() {
           return (
             <Tabs.Trigger key={phase.id} value={phase.id}>
               {phase.name}
-              <Badge ml={2} size="xs" colorPalette="teal" variant="subtle">{formatMoney(total)}</Badge>
+              <Badge ml={2} size="xs" colorPalette="purple" variant="subtle">{formatMoney(total)}</Badge>
             </Tabs.Trigger>
           );
         })}

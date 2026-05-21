@@ -97,7 +97,7 @@ export default function Materials() {
           return (
             <Tabs.Trigger key={category.id} value={category.id}>
               {category.name}
-              <Badge ml={2} size="xs" colorPalette="teal" variant="subtle">{formatMoney(total)}</Badge>
+              <Badge ml={2} size="xs" colorPalette="purple" variant="subtle">{formatMoney(total)}</Badge>
             </Tabs.Trigger>
           );
         })}

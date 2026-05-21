@@ -7,7 +7,7 @@ interface UiButtonProps extends Omit<ButtonProps, 'onClick'> {
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void | Promise<void>;
 }
 
-export default function UiButton({ icon, children, colorPalette = 'teal', onClick, disabled, ...props }: UiButtonProps) {
+export default function UiButton({ icon, children, colorPalette = 'purple', onClick, disabled, ...props }: UiButtonProps) {
   const [loading, setLoading] = useState(false);
 
   async function handleClick(e: React.MouseEvent<HTMLButtonElement>) {

@@ -1,4 +1,5 @@
-import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
+import { ChakraProvider } from '@chakra-ui/react';
+import { system } from './theme';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/ui/toast/toaster';
 import AppShell from './routes/app-shell/app-shell';
@@ -13,7 +14,7 @@ import TaskDrawer from './routes/tasks/components/phase-view/components/task-dra
 
 export default function App() {
   return (
-    <ChakraProvider value={defaultSystem}>
+    <ChakraProvider value={system}>
       <Toaster />
       <BrowserRouter>
         <Routes>
