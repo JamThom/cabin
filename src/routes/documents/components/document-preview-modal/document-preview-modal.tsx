@@ -1,6 +1,6 @@
 import { CloseButton, Dialog, Portal, Spinner, Stack, Text, Box } from '@chakra-ui/react';
 import { useEffect, useMemo, useState } from 'react';
-import * as pdfjsLib from 'pdfjs-dist/build/pdf.mjs';
+import * as pdfjsLib from 'pdfjs-dist/build/pdf.min.mjs';
 import { DocumentFile } from '@/store/types';
 import { API_BASE_URL } from '@/api/hooks/request';
 
@@ -29,7 +29,7 @@ export default function DocumentPreviewModal({ file, onClose }: Props) {
       try {
         setStatus('loading');
         
-          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.7.284/pdf.worker.min.js';
+          pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
         
         const loadingTask = pdfjsLib.getDocument({ url: resolvedUrl });
         const pdf = await loadingTask.promise;

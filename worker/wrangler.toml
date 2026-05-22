@@ -6,3 +6,7 @@ compatibility_date = "2024-01-01"
 binding = "DB"
 database_name = "cabin-organiser"
 database_id = "8786908f-028d-49c4-902c-50db21221441"
+
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "cabin-organiser-files"

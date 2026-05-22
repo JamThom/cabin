@@ -19,15 +19,6 @@ function crypto_uuid() {
   return crypto.randomUUID();
 }
 
-function uint8ToBase64(uint8) {
-  let binary = '';
-  const chunkSize = 0x8000;
-  for (let i = 0; i < uint8.length; i += chunkSize) {
-    binary += String.fromCharCode(...uint8.subarray(i, i + chunkSize));
-  }
-  return btoa(binary);
-}
-
 function base64ToUint8(base64) {
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
@@ -51,18 +42,6 @@ async function saveState(db, state) {
   await db.prepare('UPDATE app_state SET state = ?, updated_at = ? WHERE id = 1').bind(JSON.stringify(state), new Date().toISOString()).run();
 }
 
-async function ensureDocumentBlobTable(db) {
-  await db.prepare(`
-    CREATE TABLE IF NOT EXISTS document_blobs (
-      file_id TEXT PRIMARY KEY,
-      mime_type TEXT NOT NULL,
-      name TEXT NOT NULL,
-      bytes BLOB NOT NULL,
-      created_at TEXT NOT NULL
-    )
-  `).run();
-}
-
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -74,6 +53,7 @@ export default {
     }
 
     const db = env.DB;
+    const bucket = env.FILES;
 
     // ── Phases ──────────────────────────────────────────────────────────────
 
@@ -323,35 +303,34 @@ export default {
     const documentFileGet = pathname.match(/^\/api\/documents\/files\/([^/]+)$/);
     if (method === 'GET' && documentFileGet) {
       const fileId = documentFileGet[1];
-      await ensureDocumentBlobTable(db);
-      const blobRow = await db
-        .prepare('SELECT mime_type, name, bytes FROM document_blobs WHERE file_id = ?')
-        .bind(fileId)
-        .first();
 
-      if (blobRow) {
-        const filename = encodeURIComponent(blobRow.name || `document-${fileId}`);
-        return new Response(blobRow.bytes, {
-          status: 200,
-          headers: {
-            ...CORS_HEADERS,
-            'Content-Type': blobRow.mime_type || 'application/octet-stream',
-            'Content-Disposition': `inline; filename*=UTF-8''${filename}`,
-          },
-        });
+      // Primary: R2
+      if (bucket) {
+        const object = await bucket.get(fileId);
+        if (object) {
+          const filename = encodeURIComponent(object.customMetadata?.name || `document-${fileId}`);
+          return new Response(object.body, {
+            headers: {
+              ...CORS_HEADERS,
+              'Content-Type': object.httpMetadata?.contentType || 'application/octet-stream',
+              'Content-Disposition': `attachment; filename*=UTF-8''${filename}`,
+              'Content-Length': String(object.size),
+            },
+          });
+        }
       }
 
+      // Fallback: legacy D1 JSON blob
       const state = await getState(db);
       const blob = state.documentBlobById?.[fileId];
-      if (!blob) return json({ error: 'File content not found' }, 404);
+      if (!blob) return json({ error: 'File not found' }, 404);
       const bytes = base64ToUint8(blob.base64);
       const filename = encodeURIComponent(blob.name || `document-${fileId}`);
-      return new Response(bytes, {
-        status: 200,
+      return new Response(bytes.buffer, {
         headers: {
           ...CORS_HEADERS,
           'Content-Type': blob.mimeType || 'application/octet-stream',
-          'Content-Disposition': `inline; filename*=UTF-8''${filename}`,
+          'Content-Disposition': `attachment; filename*=UTF-8''${filename}`,
         },
       });
     }
@@ -360,7 +339,6 @@ export default {
     if (method === 'DELETE' && documentDelete) {
       const fileId = documentDelete[1];
       const state = await getState(db);
-      await ensureDocumentBlobTable(db);
       if (!state.documentFolders) state.documentFolders = [];
       let removed = false;
       state.documentFolders.forEach((folder) => {
@@ -370,10 +348,8 @@ export default {
         folder.files = next;
       });
       if (!removed) return json({ error: 'Not found' }, 404);
-      await db.prepare('DELETE FROM document_blobs WHERE file_id = ?').bind(fileId).run();
-      if (state.documentBlobById?.[fileId]) {
-        delete state.documentBlobById[fileId];
-      }
+      if (bucket) await bucket.delete(fileId);
+      if (state.documentBlobById?.[fileId]) delete state.documentBlobById[fileId];
       await saveState(db, state);
       return noContent();
     }
@@ -392,74 +368,44 @@ export default {
     // POST /api/documents/upload
     if (method === 'POST' && pathname === '/api/documents/upload') {
       try {
+        if (!bucket) return json({ error: 'File storage not configured' }, 500);
         const state = await getState(db);
-        await ensureDocumentBlobTable(db);
         if (!state.documentFolders) state.documentFolders = [];
-        if (!state.documentBlobById) state.documentBlobById = {};
-
-        let folderId = '';
-        let name = '';
-        let tags = [];
-        let mimeType = 'application/octet-stream';
-        let fileBytes = null;
 
         const contentType = request.headers.get('content-type') || '';
-        if (contentType.includes('multipart/form-data')) {
-          const form = await request.formData();
-          const filePart = form.get('file');
-          folderId = String(form.get('folderId') || '');
-          name = String(form.get('name') || '');
-          mimeType = String(form.get('mimeType') || 'application/octet-stream');
-          const rawTags = String(form.get('tags') || '[]');
-          try {
-            tags = JSON.parse(rawTags);
-          } catch {
-            tags = [];
-          }
-          if (!Array.isArray(tags)) tags = [];
-          if (!filePart || typeof filePart === 'string') {
-            return json({ error: 'A multipart file field named "file" is required' }, 400);
-          }
-          const fileBuffer = await filePart.arrayBuffer();
-          fileBytes = new Uint8Array(fileBuffer);
-          if (!fileBytes.length) {
-            return json({ error: 'Uploaded file is empty' }, 400);
-          }
-          if (!name) name = filePart.name || 'document';
-          if (!mimeType || mimeType === 'application/octet-stream') {
-            mimeType = filePart.type || 'application/octet-stream';
-          }
-        } else {
-          const body = await request.json();
-          folderId = body.folderId;
-          name = body.name;
-          tags = Array.isArray(body.tags) ? body.tags : [];
-          mimeType = body.mimeType || 'application/octet-stream';
+        if (!contentType.includes('multipart/form-data')) {
+          return json({ error: 'multipart/form-data required' }, 400);
         }
 
-        if (!folderId) return json({ error: 'folderId is required' }, 400);
-        if (!fileBytes?.length) {
-          return json({ error: 'A multipart file with content is required' }, 400);
-        }
+        const form = await request.formData();
+        const filePart = form.get('file');
+        const folderId = String(form.get('folderId') || '');
+        let name = String(form.get('name') || '');
+        let mimeType = String(form.get('mimeType') || 'application/octet-stream');
+        const rawTags = String(form.get('tags') || '[]');
+        let tags = [];
+        try { tags = JSON.parse(rawTags); } catch { tags = []; }
+        if (!Array.isArray(tags)) tags = [];
+
+        if (!filePart || typeof filePart === 'string') return json({ error: '"file" field required' }, 400);
+        if (!folderId) return json({ error: 'folderId required' }, 400);
+
         const folder = state.documentFolders.find((f) => f.id === folderId);
         if (!folder) return json({ error: 'Folder not found' }, 404);
         if (!Array.isArray(folder.files)) folder.files = [];
 
-        const fileId = crypto_uuid();
-        if (fileBytes?.length) {
-          await db
-            .prepare('INSERT INTO document_blobs (file_id, mime_type, name, bytes, created_at) VALUES (?, ?, ?, ?, ?)')
-            .bind(fileId, mimeType, name || 'document', fileBytes, new Date().toISOString())
-            .run();
+        if (!name) name = filePart.name || 'document';
+        if (!mimeType || mimeType === 'application/octet-stream') {
+          mimeType = filePart.type || 'application/octet-stream';
         }
-        const file = {
-          id: fileId,
-          folderId,
-          name: name || 'document',
-          tags,
-          modified: new Date().toISOString(),
-          mimeType,
-        };
+
+        const fileId = crypto_uuid();
+        await bucket.put(fileId, await filePart.arrayBuffer(), {
+          httpMetadata: { contentType: mimeType },
+          customMetadata: { name, folderId },
+        });
+
+        const file = { id: fileId, folderId, name, tags, modified: new Date().toISOString(), mimeType };
         folder.files.push(file);
         await saveState(db, state);
         return json(file, 201);

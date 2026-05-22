@@ -31,6 +31,7 @@ await ctx.watch();
 const mime = {
   '.html': 'text/html',
   '.js': 'application/javascript',
+  '.mjs': 'application/javascript',
   '.css': 'text/css',
   '.map': 'application/json',
 };
