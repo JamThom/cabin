@@ -5,6 +5,7 @@ import { MaterialItem } from '@/api/hooks/materials/use-material-categories';
 import useMaterialCategoriesItemsBulkUpdate from '@/api/hooks/materials/use-material-categories-items-bulk-update';
 import useMaterialCategoriesItemDelete from '@/api/hooks/materials/use-material-categories-item-delete';
 import useUiToast from '@/ui/toast/use-ui-toast';
+import { useConfirmPrompt } from '@/ui/confirm-prompt/confirm-prompt-provider';
 import MaterialItemFormFields, { MaterialFormValues } from '../material-item-form-fields/material-item-form-fields';
 
 interface BulkEditDrawerProps {
@@ -36,6 +37,7 @@ export default function BulkEditDrawer({ categoryId, items, open, onClose }: Bul
   const bulkUpdate = useMaterialCategoriesItemsBulkUpdate();
   const deleteItem = useMaterialCategoriesItemDelete();
   const { showSuccessToast } = useUiToast();
+  const { showConfirmPrompt } = useConfirmPrompt();
   const [values, setValues] = useState<MaterialFormValues>(() => initValues(items));
 
   useEffect(() => {
@@ -61,6 +63,8 @@ export default function BulkEditDrawer({ categoryId, items, open, onClose }: Bul
   }
 
   async function handleDelete() {
+    const ok = await showConfirmPrompt({ title: `Delete ${items.length} materials?`, description: 'This cannot be undone.' });
+    if (!ok) return;
     await Promise.all(items.map((item) => deleteItem.mutateAsync({ categoryId, itemId: item.id })));
     showSuccessToast(`${items.length} items deleted`);
     onClose();

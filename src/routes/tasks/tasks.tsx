@@ -12,6 +12,7 @@ import PageHeader from '@/ui/page-header/page-header';
 import RouteTabs from '@/ui/route-tabs/route-tabs';
 import UiExtrasMenu from '@/ui/extras-menu/extras-menu';
 import useUiToast from '@/ui/toast/use-ui-toast';
+import { useConfirmPrompt } from '@/ui/confirm-prompt/confirm-prompt-provider';
 import { formatMoney } from '@/utils/format-money';
 
 function parseMoney(value: string): number {
@@ -29,6 +30,7 @@ export default function Tasks() {
   const activePhaseId = phaseId ?? phases[0]?.id;
   const activePhase = phases.find((p) => p.id === activePhaseId);
   const { showSuccessToast } = useUiToast();
+  const { showConfirmPrompt, showInputPrompt } = useConfirmPrompt();
 
   useEffect(() => {
     if (!phaseId && phases.length > 0) navigate(`/tasks/${phases[0].id}`, { replace: true });
@@ -36,6 +38,8 @@ export default function Tasks() {
 
   async function handleDeletePhase() {
     if (!activePhaseId) return;
+    const ok = await showConfirmPrompt({ title: 'Delete phase?', description: 'All tasks in this phase will also be deleted.' });
+    if (!ok) return;
     await deletePhase.mutateAsync({ phaseId: activePhaseId });
     showSuccessToast('Phase deleted');
     const remaining = phases.filter((p) => p.id !== activePhaseId);
@@ -71,22 +75,22 @@ export default function Tasks() {
             options={[
               {
                 label: 'Add Phase',
-                prompt: {
+                onClick: () => showInputPrompt({
                   title: 'Add Phase',
                   placeholder: 'Phase name',
                   confirmLabel: 'Add',
-                  onConfirm: async (name) => { await createPhase.mutateAsync({ name }); showSuccessToast('Phase added'); }
-                }
+                  onConfirm: async (name) => { await createPhase.mutateAsync({ name }); showSuccessToast('Phase added'); },
+                }),
               },
               {
                 label: 'Rename Phase',
                 disabled: !activePhase,
-                prompt: {
+                onClick: () => showInputPrompt({
                   title: 'Rename Phase',
                   initialValue: activePhase?.name,
                   confirmLabel: 'Rename',
-                  onConfirm: async (name) => { if (!activePhaseId) return; await updatePhase.mutateAsync({ phaseId: activePhaseId, name }); showSuccessToast('Phase renamed'); }
-                }
+                  onConfirm: async (name) => { if (!activePhaseId) return; await updatePhase.mutateAsync({ phaseId: activePhaseId, name }); showSuccessToast('Phase renamed'); },
+                }),
               },
               {
                 label: 'Delete Phase',

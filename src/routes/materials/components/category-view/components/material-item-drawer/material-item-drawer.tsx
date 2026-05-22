@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { MaterialItem } from '@/api/hooks/materials/use-material-categories';
 import useMaterialCategoriesItemDelete from '@/api/hooks/materials/use-material-categories-item-delete';
 import useUiToast from '@/ui/toast/use-ui-toast';
+import { useConfirmPrompt } from '@/ui/confirm-prompt/confirm-prompt-provider';
 import MaterialItemFormFields, { MaterialFormValues } from '../material-item-form-fields/material-item-form-fields';
 
 interface MaterialItemDrawerProps {
@@ -16,6 +17,7 @@ interface MaterialItemDrawerProps {
 export default function MaterialItemDrawer({ categoryId, item, onClose, onSave }: MaterialItemDrawerProps) {
   const deleteItem = useMaterialCategoriesItemDelete();
   const { showSuccessToast } = useUiToast();
+  const { showConfirmPrompt } = useConfirmPrompt();
   const [values, setValues] = useState<MaterialFormValues>({
     name: '', productName: '', url: '', cost: '0', unit: '', quantity: '1', group: '',
   });
@@ -53,6 +55,8 @@ export default function MaterialItemDrawer({ categoryId, item, onClose, onSave }
                 colorPalette="red"
                 variant="outline"
                 onClick={async () => {
+                  const ok = await showConfirmPrompt({ title: 'Delete material?', description: item.name });
+                  if (!ok) return;
                   await deleteItem.mutateAsync({ categoryId, itemId: item.id });
                   showSuccessToast('Material deleted');
                   onClose();

@@ -1,12 +1,12 @@
 import { createToaster, Toaster as ChakraToaster, ToastRoot, ToastTitle, ToastCloseTrigger } from '@chakra-ui/react';
 
-export const toaster = createToaster({ placement: 'top-end', gap: 8 });
+export const toaster = createToaster({ placement: 'top', gap: 8 });
 
 export function Toaster() {
   return (
     <ChakraToaster toaster={toaster}>
       {(toast) => (
-        <ToastRoot key={toast.id} type={toast.type}>
+        <ToastRoot key={toast.id} type={toast.type} width="300px">
           <ToastTitle>{toast.title as string}</ToastTitle>
           <ToastCloseTrigger />
         </ToastRoot>

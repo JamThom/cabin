@@ -354,6 +354,53 @@ export default {
       return noContent();
     }
 
+    // PATCH /api/documents/folders/:folderId  (rename)
+    const folderPatch = pathname.match(/^\/api\/documents\/folders\/([^/]+)$/);
+    if (method === 'PATCH' && folderPatch) {
+      const folderId = folderPatch[1];
+      const body = await request.json();
+      const state = await getState(db);
+      if (!state.documentFolders) state.documentFolders = [];
+      const folder = state.documentFolders.find((f) => f.id === folderId);
+      if (!folder) return json({ error: 'Not found' }, 404);
+      folder.name = body.name;
+      await saveState(db, state);
+      return json(folder);
+    }
+
+    // DELETE /api/documents/folders/:folderId  (deletes folder, all descendants, and their files)
+    const folderDelete = pathname.match(/^\/api\/documents\/folders\/([^/]+)$/);
+    if (method === 'DELETE' && folderDelete) {
+      const folderId = folderDelete[1];
+      const state = await getState(db);
+      if (!state.documentFolders) state.documentFolders = [];
+
+      // Collect all folder ids in the subtree rooted at folderId
+      function collectDescendantIds(rootId) {
+        const ids = [rootId];
+        state.documentFolders.forEach((f) => {
+          if (f.parentDirectoryId === rootId) ids.push(...collectDescendantIds(f.id));
+        });
+        return ids;
+      }
+      const toDelete = new Set(collectDescendantIds(folderId));
+
+      // Delete R2 files for every folder in the subtree
+      if (bucket) {
+        for (const folder of state.documentFolders) {
+          if (!toDelete.has(folder.id)) continue;
+          for (const file of (folder.files ?? [])) {
+            await bucket.delete(file.id);
+            if (state.documentBlobById?.[file.id]) delete state.documentBlobById[file.id];
+          }
+        }
+      }
+
+      state.documentFolders = state.documentFolders.filter((f) => !toDelete.has(f.id));
+      await saveState(db, state);
+      return noContent();
+    }
+
     // POST /api/documents/folders
     if (method === 'POST' && pathname === '/api/documents/folders') {
       const body = await request.json();

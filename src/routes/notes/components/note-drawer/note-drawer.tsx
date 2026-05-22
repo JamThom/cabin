@@ -6,6 +6,7 @@ import useNotes from '@/api/hooks/notes/use-notes';
 import useNotesUpdate from '@/api/hooks/notes/use-notes-update';
 import useNotesDelete from '@/api/hooks/notes/use-notes-delete';
 import useUiToast from '@/ui/toast/use-ui-toast';
+import { useConfirmPrompt } from '@/ui/confirm-prompt/confirm-prompt-provider';
 
 export default function NoteDrawer() {
   const { noteId } = useParams<{ noteId: string }>();
@@ -14,6 +15,7 @@ export default function NoteDrawer() {
   const notesUpdate = useNotesUpdate();
   const notesDelete = useNotesDelete();
   const { showSuccessToast } = useUiToast();
+  const { showConfirmPrompt } = useConfirmPrompt();
 
   const note = useMemo(() => notes.find((n) => n.id === noteId) ?? null, [notes, noteId]);
   const [title, setTitle] = useState('');
@@ -56,6 +58,8 @@ export default function NoteDrawer() {
                 colorPalette="red"
                 variant="outline"
                 onClick={async () => {
+                  const ok = await showConfirmPrompt({ title: 'Delete note?', description: note?.title || undefined });
+                  if (!ok) return;
                   await notesDelete.mutateAsync({ noteId: noteId! });
                   showSuccessToast('Note deleted');
                   close();

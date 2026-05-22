@@ -1,7 +1,10 @@
 import { Box } from '@chakra-ui/react';
 import useDocuments from '@/api/hooks/documents/use-documents';
 import useDocumentFoldersCreate from '@/api/hooks/documents/use-document-folders-create';
+import useDocumentFoldersDelete from '@/api/hooks/documents/use-document-folders-delete';
+import useDocumentFoldersUpdate from '@/api/hooks/documents/use-document-folders-update';
 import useDocumentsDelete from '@/api/hooks/documents/use-documents-delete';
+import useUiToast from '@/ui/toast/use-ui-toast';
 import useDocumentsUpload from '@/api/hooks/documents/use-documents-upload';
 import PageHeader from '@/ui/page-header/page-header';
 import PageLayout from '@/ui/page-layout/page-layout';
@@ -12,16 +15,21 @@ import DocumentsTable from './components/documents-table/documents-table';
 import DocumentPreviewModal from './components/document-preview-modal/document-preview-modal';
 import UploadModal from './components/upload-modal/upload-modal';
 import DocumentDrawer from './components/document-drawer/document-drawer';
+import { useConfirmPrompt } from '@/ui/confirm-prompt/confirm-prompt-provider';
 
 export default function Documents() {
   const { data: folders = [] } = useDocuments();
   const createFolder = useDocumentFoldersCreate();
+  const deleteFolder = useDocumentFoldersDelete();
+  const updateFolder = useDocumentFoldersUpdate();
   const upload = useDocumentsUpload();
   const remove = useDocumentsDelete();
   const [selectedFile, setSelectedFile] = useState<DocumentFile | null>(null);
   const [selectedPreviewFile, setSelectedPreviewFile] = useState<DocumentFile | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [uploadFolderId, setUploadFolderId] = useState<string | undefined>(undefined);
+  const { showConfirmPrompt } = useConfirmPrompt();
+  const { showSuccessToast } = useUiToast();
 
   const selectedFileWithFolder = useMemo(() => {
     if (!selectedFile) return null;
@@ -36,10 +44,27 @@ export default function Documents() {
   }, [folders, selectedPreviewFile]);
 
   async function handleDeleteFile(file: DocumentFile) {
-    if (!window.confirm(`Delete ${file.name}?`)) return;
+    const ok = await showConfirmPrompt({ title: 'Delete file?', description: `"${file.name}" will be permanently deleted.` });
+    if (!ok) return;
     await remove.mutateAsync(file.id);
     if (selectedFile?.id === file.id) setSelectedFile(null);
     if (selectedPreviewFile?.id === file.id) setSelectedPreviewFile(null);
+  }
+
+  async function handleDeleteFolder(folderId: string) {
+    const folder = folders.find((f) => f.id === folderId);
+    const ok = await showConfirmPrompt({
+      title: 'Delete folder?',
+      description: `"${folder?.name ?? 'This folder'}" and all files inside will be permanently deleted.`,
+    });
+    if (!ok) return;
+    await deleteFolder.mutateAsync(folderId);
+    showSuccessToast('Folder deleted');
+  }
+
+  async function handleRenameFolder(folderId: string, name: string) {
+    await updateFolder.mutateAsync({ folderId, name });
+    showSuccessToast('Folder renamed');
   }
 
   async function handleAddSubfolder(parentFolderId: string, name: string) {
@@ -71,6 +96,8 @@ export default function Documents() {
           onFileClick={(file) => setSelectedPreviewFile(file)}
           onFileInfo={(file) => setSelectedFile(file)}
           onFileDelete={handleDeleteFile}
+          onFolderDelete={handleDeleteFolder}
+          onFolderRename={handleRenameFolder}
           onFolderAddSubfolder={handleAddSubfolder}
           onFolderUploadClick={(folderId) => {
             setUploadFolderId(folderId);

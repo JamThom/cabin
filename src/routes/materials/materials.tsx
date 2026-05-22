@@ -12,6 +12,7 @@ import PageHeader from '@/ui/page-header/page-header';
 import RouteTabs from '@/ui/route-tabs/route-tabs';
 import UiExtrasMenu from '@/ui/extras-menu/extras-menu';
 import useUiToast from '@/ui/toast/use-ui-toast';
+import { useConfirmPrompt } from '@/ui/confirm-prompt/confirm-prompt-provider';
 import { formatMoney } from '@/utils/format-money';
 
 export default function Materials() {
@@ -25,6 +26,7 @@ export default function Materials() {
   const activeCategoryId = categoryId ?? categories[0]?.id;
   const activeCategory = categories.find((c) => c.id === activeCategoryId);
   const { showSuccessToast } = useUiToast();
+  const { showConfirmPrompt, showInputPrompt } = useConfirmPrompt();
 
   useEffect(() => {
     if (!categoryId && categories.length > 0) navigate(`/materials/category/${categories[0].id}`, { replace: true });
@@ -32,6 +34,8 @@ export default function Materials() {
 
   async function handleDeleteCategory() {
     if (!activeCategoryId) return;
+    const ok = await showConfirmPrompt({ title: 'Delete category?', description: 'All materials in this category will also be deleted.' });
+    if (!ok) return;
     await deleteCategory.mutateAsync({ categoryId: activeCategoryId });
     showSuccessToast('Category deleted');
     const remaining = categories.filter((c) => c.id !== activeCategoryId);
@@ -66,22 +70,22 @@ export default function Materials() {
             options={[
               {
                 label: 'Add Category',
-                prompt: {
+                onClick: () => showInputPrompt({
                   title: 'Add Category',
                   placeholder: 'Category name',
                   confirmLabel: 'Add',
-                  onConfirm: async (name) => { await createCategory.mutateAsync({ name }); showSuccessToast('Category added'); }
-                }
+                  onConfirm: async (name) => { await createCategory.mutateAsync({ name }); showSuccessToast('Category added'); },
+                }),
               },
               {
                 label: 'Rename Category',
                 disabled: !activeCategory,
-                prompt: {
+                onClick: () => showInputPrompt({
                   title: 'Rename Category',
                   initialValue: activeCategory?.name,
                   confirmLabel: 'Rename',
-                  onConfirm: async (name) => { if (!activeCategoryId) return; await updateCategory.mutateAsync({ categoryId: activeCategoryId, name }); showSuccessToast('Category renamed'); }
-                }
+                  onConfirm: async (name) => { if (!activeCategoryId) return; await updateCategory.mutateAsync({ categoryId: activeCategoryId, name }); showSuccessToast('Category renamed'); },
+                }),
               },
               {
                 label: 'Delete Category',

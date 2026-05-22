@@ -2,6 +2,7 @@ import { ChakraProvider } from '@chakra-ui/react';
 import { system } from './theme';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/ui/toast/toaster';
+import { ConfirmPromptProvider } from '@/ui/confirm-prompt/confirm-prompt-provider';
 import AppShell from './routes/app-shell/app-shell';
 import Documents from './routes/documents/documents';
 import Materials from './routes/materials/materials';
@@ -16,6 +17,7 @@ export default function App() {
   return (
     <ChakraProvider value={system}>
       <Toaster />
+      <ConfirmPromptProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<AppShell />}>
@@ -35,6 +37,7 @@ export default function App() {
           </Route>
         </Routes>
       </BrowserRouter>
+      </ConfirmPromptProvider>
     </ChakraProvider>
   );
 }

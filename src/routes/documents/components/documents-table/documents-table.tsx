@@ -6,6 +6,7 @@ import UiExtrasMenu from '@/ui/extras-menu/extras-menu';
 import UiTable from '@/ui/table/table';
 import { DocumentFile, DocumentFolder } from '@/store/types';
 import { API_BASE_URL } from '@/api/hooks/request';
+import { useConfirmPrompt } from '@/ui/confirm-prompt/confirm-prompt-provider';
 
 interface DocRow {
   key: string;
@@ -25,6 +26,8 @@ interface DocumentsTableProps {
   onFileClick?: (file: DocumentFile) => void;
   onFileInfo?: (file: DocumentFile) => void;
   onFileDelete?: (file: DocumentFile) => void | Promise<void>;
+  onFolderDelete?: (folderId: string) => void | Promise<void>;
+  onFolderRename?: (folderId: string, name: string) => void | Promise<void>;
   onFolderUploadClick?: (folderId: string) => void;
   onFolderAddSubfolder?: (parentFolderId: string, name: string) => void | Promise<void>;
 }
@@ -33,10 +36,11 @@ function sortByName<T extends { name: string }>(items: T[]) {
   return [...items].sort((left, right) => left.name.localeCompare(right.name));
 }
 
-export default function DocumentsTable({ folders, onFileClick, onFileInfo, onFileDelete, onFolderUploadClick, onFolderAddSubfolder }: DocumentsTableProps) {
+export default function DocumentsTable({ folders, onFileClick, onFileInfo, onFileDelete, onFolderDelete, onFolderRename, onFolderUploadClick, onFolderAddSubfolder }: DocumentsTableProps) {
   const [expandedFolderIds, setExpandedFolderIds] = useState<Set<string>>(new Set(folders.map((f) => f.id)));
   const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
   const seenFolderIds = useRef<Set<string>>(new Set(folders.map((folder) => folder.id)));
+  const { showInputPrompt } = useConfirmPrompt();
 
   useEffect(() => {
     setExpandedFolderIds((prev) => {
@@ -154,18 +158,26 @@ export default function DocumentsTable({ folders, onFileClick, onFileInfo, onFil
               <UiExtrasMenu
                 variant="inline"
                 options={row.original.type === 'folder' ? [
-                  { label: 'Delete', onClick: () => {} },
-                  { label: 'Rename', onClick: () => {} },
+                  {
+                    label: 'Rename',
+                    onClick: () => showInputPrompt({
+                      title: 'Rename Folder',
+                      initialValue: row.original.name,
+                      confirmLabel: 'Rename',
+                      onConfirm: async (name) => onFolderRename?.(row.original.id, name),
+                    }),
+                  },
                   {
                     label: 'Add Subfolder',
-                    prompt: {
+                    onClick: () => showInputPrompt({
                       title: 'Add Subfolder',
                       placeholder: 'Subfolder name',
                       confirmLabel: 'Add',
                       onConfirm: async (name) => onFolderAddSubfolder?.(row.original.id, name),
-                    },
+                    }),
                   },
                   { label: 'Upload', onClick: () => onFolderUploadClick?.(row.original.id) },
+                  { label: 'Delete', color: 'red.500', onClick: () => onFolderDelete?.(row.original.id) },
                 ] : [
                   {
                     label: 'Download',
@@ -180,7 +192,7 @@ export default function DocumentsTable({ folders, onFileClick, onFileInfo, onFil
         }
       }
     ],
-    [expandedFolderIds, hoveredRowId, onFileClick, onFileDelete, onFileInfo, onFolderAddSubfolder, onFolderUploadClick]
+    [expandedFolderIds, hoveredRowId, onFileClick, onFileDelete, onFileInfo, onFolderAddSubfolder, onFolderDelete, onFolderRename, onFolderUploadClick, showInputPrompt]
   );
 
   return (

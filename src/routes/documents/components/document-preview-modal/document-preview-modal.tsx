@@ -66,7 +66,6 @@ export default function DocumentPreviewModal({ file, onClose }: Props) {
           if (cancelled) { loadingTask.destroy(); return; }
 
           const dataUrl = canvas.toDataURL();
-          // Show page 1 immediately; remaining pages slot in as they finish
           setPageImages((prev) => { const next = [...prev]; next[pageNum - 1] = dataUrl; return next; });
           if (pageNum === 1) setStatus('ready');
         }
