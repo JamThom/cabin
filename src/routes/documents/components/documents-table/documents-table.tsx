@@ -6,7 +6,6 @@ import UiExtrasMenu from '@/ui/extras-menu/extras-menu';
 import UiTable from '@/ui/table/table';
 import { DocumentFile, DocumentFolder } from '@/store/types';
 import { API_BASE_URL } from '@/api/hooks/request';
-import isPreviewableDocumentMimeType from '@/utils/is-previewable-document-mime-type';
 
 interface DocRow {
   key: string;
@@ -24,7 +23,7 @@ interface DocRow {
 interface DocumentsTableProps {
   folders: DocumentFolder[];
   onFileClick?: (file: DocumentFile) => void;
-  onFilePreview?: (file: DocumentFile) => void;
+  onFileInfo?: (file: DocumentFile) => void;
   onFileDelete?: (file: DocumentFile) => void | Promise<void>;
   onFolderUploadClick?: (folderId: string) => void;
   onFolderAddSubfolder?: (parentFolderId: string, name: string) => void | Promise<void>;
@@ -34,7 +33,7 @@ function sortByName<T extends { name: string }>(items: T[]) {
   return [...items].sort((left, right) => left.name.localeCompare(right.name));
 }
 
-export default function DocumentsTable({ folders, onFileClick, onFilePreview, onFileDelete, onFolderUploadClick, onFolderAddSubfolder }: DocumentsTableProps) {
+export default function DocumentsTable({ folders, onFileClick, onFileInfo, onFileDelete, onFolderUploadClick, onFolderAddSubfolder }: DocumentsTableProps) {
   const [expandedFolderIds, setExpandedFolderIds] = useState<Set<string>>(new Set(folders.map((f) => f.id)));
   const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
   const seenFolderIds = useRef<Set<string>>(new Set(folders.map((folder) => folder.id)));
@@ -144,12 +143,12 @@ export default function DocumentsTable({ folders, onFileClick, onFilePreview, on
         enableSorting: false,
         cell: ({ row }) => {
           const visible = hoveredRowId === row.original.key;
-          if (!visible) return null;
           return (
             <Box
               display="flex"
               justifyContent="flex-end"
-              visibility={visible ? 'visible' : 'hidden'}
+              opacity={visible ? 1 : 0}
+              pointerEvents={visible ? 'auto' : 'none'}
               onClick={(e) => e.stopPropagation()}
             >
               <UiExtrasMenu
@@ -172,8 +171,8 @@ export default function DocumentsTable({ folders, onFileClick, onFilePreview, on
                     label: 'Download',
                     onClick: () => window.open(`${API_BASE_URL}/api/documents/files/${row.original.id}`, '_blank', 'noopener,noreferrer')
                   },
+                  { label: 'View Info', onClick: () => onFileInfo?.(row.original) },
                   { label: 'Delete', onClick: () => onFileDelete?.(row.original) },
-                  ...(isPreviewableDocumentMimeType(row.original.mimeType) ? [{ label: 'Preview', onClick: () => onFilePreview?.(row.original) }] : []),
                 ]}
               />
             </Box>
@@ -181,7 +180,7 @@ export default function DocumentsTable({ folders, onFileClick, onFilePreview, on
         }
       }
     ],
-    [expandedFolderIds, hoveredRowId, onFileClick, onFileDelete, onFilePreview, onFolderAddSubfolder, onFolderUploadClick]
+    [expandedFolderIds, hoveredRowId, onFileClick, onFileDelete, onFileInfo, onFolderAddSubfolder, onFolderUploadClick]
   );
 
   return (

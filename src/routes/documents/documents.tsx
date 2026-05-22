@@ -68,8 +68,8 @@ export default function Documents() {
       <Box borderWidth="1px" borderRadius="lg">
         <DocumentsTable
           folders={folders}
-          onFileClick={(file) => setSelectedFile(file)}
-          onFilePreview={(file) => setSelectedPreviewFile(file)}
+          onFileClick={(file) => setSelectedPreviewFile(file)}
+          onFileInfo={(file) => setSelectedFile(file)}
           onFileDelete={handleDeleteFile}
           onFolderAddSubfolder={handleAddSubfolder}
           onFolderUploadClick={(folderId) => {
