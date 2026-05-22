@@ -1,5 +1,5 @@
 import { CloseButton, Dialog, Portal, Spinner, Text, Box } from '@chakra-ui/react';
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf.min.mjs';
 import { DocumentFile } from '@/store/types';
 import { API_BASE_URL } from '@/api/hooks/request';
@@ -86,6 +86,14 @@ export default function DocumentPreviewModal({ file, onClose }: Props) {
   const totalPages = pageImages.length;
   const pageReady = Boolean(pageImages[currentPage]);
 
+  const imgStyle: React.CSSProperties = {
+    maxHeight: '80vh',
+    maxWidth: '100%',
+    objectFit: 'contain',
+    margin: '1rem',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+  };
+
   return (
     <Dialog.Root open={Boolean(file)} onOpenChange={(event) => !event.open && onClose()} placement="center">
       <Portal>
@@ -96,9 +104,9 @@ export default function DocumentPreviewModal({ file, onClose }: Props) {
               <CloseButton bg="gray.200" size="lg" />
             </Dialog.CloseTrigger>
 
-            <Dialog.Body p={0} flex="1" display="flex" alignItems="center" justifyContent="center" overflow="hidden" minH={0}>
+            <Dialog.Body p={0} flex="1" display="flex" alignItems="center" justifyContent="center" overflow="auto" minH={0}>
               {isImage && file ? (
-                <img src={resolvedUrl} alt={file.name} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
+                <img src={resolvedUrl} alt={file.name} style={imgStyle} />
               ) : isPdf && file ? (
                 status === 'loading' || (status === 'ready' && !pageReady) ? (
                   <Box display="flex" justifyContent="center" alignItems="center" p={12}>
@@ -112,7 +120,7 @@ export default function DocumentPreviewModal({ file, onClose }: Props) {
                   <img
                     src={pageImages[currentPage]}
                     alt={`Page ${currentPage + 1}`}
-                    style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }}
+                    style={imgStyle}
                   />
                 )
               ) : (
