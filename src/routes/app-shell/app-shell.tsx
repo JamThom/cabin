@@ -6,6 +6,7 @@ export default function AppShell() {
   return (
     <Flex
       h={{ base: '100vh', md: 'auto' }}
+      overflow={{ base: 'hidden', md: 'visible' }}
       width={{ base: 'unset', md: 'auto' }}
       border={{ base: '0', md: 'initial' }}
       justifyContent={{ base: 'space-between', md: 'flex-start' }}
