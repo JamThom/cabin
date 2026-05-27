@@ -43,6 +43,7 @@ export default function TaskDrawer() {
   const [costEst, setCostEst] = useState("");
   const [blockedBy, setBlockedBy] = useState("");
   const [description, setDescription] = useState("");
+  const [date, setDate] = useState("");
 
   useEffect(() => {
     if (!task) return;
@@ -51,6 +52,7 @@ export default function TaskDrawer() {
     setCostEst(task.costEst);
     setBlockedBy(task.blockedBy ?? "");
     setDescription(task.description ?? "");
+    setDate(task.date ?? "");
   }, [task]);
 
   function close() {
@@ -66,6 +68,7 @@ export default function TaskDrawer() {
       costEst,
       blockedBy,
       description,
+      date,
     });
     showSuccessToast("Task saved");
     close();
@@ -161,6 +164,16 @@ export default function TaskDrawer() {
                     placeholder="e.g. $1,000"
                     value={costEst}
                     onChange={(e) => setCostEst(e.target.value)}
+                  />
+                </Box>
+                <Box>
+                  <Text fontSize="sm" fontWeight="medium" mb={1}>
+                    Date
+                  </Text>
+                  <Input
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
                   />
                 </Box>
               </Stack>
