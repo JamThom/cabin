@@ -2,15 +2,16 @@ import { Text } from '@chakra-ui/react';
 import { ColumnDef } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
 import UiTableCheckbox, { useRowSelection } from '@/ui/table/table-checkbox';
-import { MaterialItem } from '@/api/hooks/materials/use-material-categories';
+import { MaterialCategory, MaterialItem } from '@/api/hooks/materials/use-material-categories';
 import UiTable from '@/ui/table/table';
 import UiBulkActions from '@/ui/bulk-actions/bulk-actions';
 import UiButton from '@/ui/button/button';
-import BulkEditDrawer from '../bulk-edit-drawer/bulk-edit-drawer';
+import MaterialItemDrawer from '../material-item-drawer/material-item-drawer';
 import { formatMoney } from '@/utils/format-money';
 
 interface MaterialsTableProps {
   categoryId: string;
+  categories: MaterialCategory[];
   items: MaterialItem[];
   onRowClick: (item: MaterialItem) => void;
 }
@@ -32,7 +33,7 @@ function UrlCell({ url }: { url: string }) {
   );
 }
 
-export default function MaterialsTable({ categoryId, items, onRowClick }: MaterialsTableProps) {
+export default function MaterialsTable({ categoryId, categories, items, onRowClick }: MaterialsTableProps) {
   const { rowSelection, setRowSelection, handleRowMouseEnter } = useRowSelection(items);
   const [bulkEditOpen, setBulkEditOpen] = useState(false);
 
@@ -99,8 +100,9 @@ export default function MaterialsTable({ categoryId, items, onRowClick }: Materi
           </UiButton>
         </UiBulkActions>
       )}
-      <BulkEditDrawer
+      <MaterialItemDrawer
         categoryId={categoryId}
+        categories={categories}
         items={selectedItems}
         open={bulkEditOpen}
         onClose={() => { setBulkEditOpen(false); setRowSelection({}); }}

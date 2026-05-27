@@ -2,17 +2,13 @@ import { Box } from '@chakra-ui/react';
 import { useParams } from 'react-router-dom';
 import { useState } from 'react';
 import useMaterialCategories from '@/api/hooks/materials/use-material-categories';
-import useMaterialCategoriesItemUpdate from '@/api/hooks/materials/use-material-categories-item-update';
 import { MaterialItem } from '@/api/hooks/materials/use-material-categories';
 import MaterialItemDrawer from './components/material-item-drawer/material-item-drawer';
 import MaterialsTable from './components/materials-table/materials-table';
-import useUiToast from '@/ui/toast/use-ui-toast';
 
 export default function Category() {
   const { categoryId } = useParams<{ categoryId: string }>();
   const { data: categories = [] } = useMaterialCategories();
-  const updateItem = useMaterialCategoriesItemUpdate();
-  const { showSuccessToast } = useUiToast();
   const [selectedItem, setSelectedItem] = useState<MaterialItem | null>(null);
   const category = categories.find((entry) => entry.id === categoryId);
 
@@ -20,27 +16,13 @@ export default function Category() {
 
   return (
     <>
-      <MaterialsTable categoryId={category.id} items={category.items} onRowClick={(item) => setSelectedItem(item)} />
+      <MaterialsTable categoryId={category.id} categories={categories} items={category.items} onRowClick={(item) => setSelectedItem(item)} />
       <MaterialItemDrawer
         categoryId={category.id}
         categories={categories}
-        item={selectedItem}
+        items={selectedItem ? [selectedItem] : []}
+        open={Boolean(selectedItem)}
         onClose={() => setSelectedItem(null)}
-        onSave={async (item, targetCategoryId) => {
-          await updateItem.mutateAsync({
-            categoryId: category.id,
-            itemId: item.id,
-            name: item.name,
-            productName: item.productName,
-            url: item.url,
-            cost: item.cost,
-            unit: item.unit,
-            quantity: item.quantity,
-            targetCategoryId: targetCategoryId !== category.id ? targetCategoryId : undefined,
-          });
-          showSuccessToast('Material saved');
-          setSelectedItem(null);
-        }}
       />
     </>
   );

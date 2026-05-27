@@ -1,100 +1,68 @@
-import { Box, CloseButton, Drawer, For, NativeSelect, Portal, Text } from '@chakra-ui/react';
-import UiButton from '@/ui/button/button';
-import { useEffect, useState } from 'react';
+import { CloseButton, Drawer, Portal } from '@chakra-ui/react';
+import { useEffect } from 'react';
 import { MaterialCategory, MaterialItem } from '@/api/hooks/materials/use-material-categories';
-import useMaterialCategoriesItemDelete from '@/api/hooks/materials/use-material-categories-item-delete';
+import UiButton from '@/ui/button/button';
 import useUiToast from '@/ui/toast/use-ui-toast';
 import { useConfirmPrompt } from '@/ui/confirm-prompt/confirm-prompt-provider';
-import MaterialItemFormFields, { MaterialFormValues } from '../material-item-form-fields/material-item-form-fields';
+import MaterialItemFormFields from '../material-item-form-fields/material-item-form-fields';
+import CategorySelect from './category-select';
+import useMaterialDrawer from './use-material-drawer';
 
 interface MaterialItemDrawerProps {
   categoryId: string;
   categories: MaterialCategory[];
-  item: MaterialItem | null;
+  items: MaterialItem[];
+  open: boolean;
   onClose: () => void;
-  onSave: (item: MaterialItem, targetCategoryId: string) => Promise<void> | void;
 }
 
-export default function MaterialItemDrawer({ categoryId, categories, item, onClose, onSave }: MaterialItemDrawerProps) {
-  const deleteItem = useMaterialCategoriesItemDelete();
+export default function MaterialItemDrawer({ categoryId, categories, items, open, onClose }: MaterialItemDrawerProps) {
+  const { isBulk, singleItem, values, setValues, selectedCategoryId, setSelectedCategoryId, save, remove, reset } = useMaterialDrawer(categoryId, items);
   const { showSuccessToast } = useUiToast();
   const { showConfirmPrompt } = useConfirmPrompt();
-  const [values, setValues] = useState<MaterialFormValues>({
-    name: '', productName: '', url: '', cost: '0', unit: '', quantity: '1',
-  });
-  const [selectedCategoryId, setSelectedCategoryId] = useState(categoryId);
 
-  useEffect(() => {
-    if (!item) return;
-    setValues({
-      name: item.name,
-      productName: item.productName,
-      url: item.url,
-      cost: String(item.cost),
-      unit: item.unit,
-      quantity: String(item.quantity),
+  useEffect(() => { if (open) reset(); }, [open]);
+
+  if (items.length === 0) return null;
+
+  async function handleSave() {
+    await save();
+    showSuccessToast(isBulk ? `${items.length} items saved` : 'Material saved');
+    onClose();
+  }
+
+  async function handleDelete() {
+    const ok = await showConfirmPrompt({
+      title: isBulk ? `Delete ${items.length} materials?` : 'Delete material?',
+      description: isBulk ? 'This cannot be undone.' : singleItem?.name,
     });
-    setSelectedCategoryId(categoryId);
-  }, [item, categoryId]);
-
-  if (!item) return null;
+    if (!ok) return;
+    await remove();
+    showSuccessToast(isBulk ? `${items.length} items deleted` : 'Material deleted');
+    onClose();
+  }
 
   return (
-    <Drawer.Root open={Boolean(item)} onOpenChange={(event) => !event.open && onClose()} placement="end" size="md">
+    <Drawer.Root open={open} onOpenChange={(e) => !e.open && onClose()} placement="end" size="md">
       <Portal>
         <Drawer.Backdrop />
         <Drawer.Positioner>
           <Drawer.Content>
             <Drawer.Header borderBottomWidth="1px">
-              <Drawer.Title>Edit Material</Drawer.Title>
+              <Drawer.Title>{isBulk ? `Edit ${items.length} items` : 'Edit Material'}</Drawer.Title>
               <Drawer.CloseTrigger asChild><CloseButton size="sm" /></Drawer.CloseTrigger>
             </Drawer.Header>
             <Drawer.Body pt={6}>
-              <Box mb={4}>
-                <Text fontSize="sm" fontWeight="medium" mb={1}>Category</Text>
-                <NativeSelect.Root>
-                  <NativeSelect.Field
-                    value={selectedCategoryId}
-                    onChange={(e) => setSelectedCategoryId(e.target.value)}
-                  >
-                    <For each={categories}>
-                      {(cat) => (
-                        <option key={cat.id} value={cat.id}>{cat.name}</option>
-                      )}
-                    </For>
-                  </NativeSelect.Field>
-                  <NativeSelect.Indicator />
-                </NativeSelect.Root>
-              </Box>
-              <MaterialItemFormFields values={values} onChange={(field, value) => setValues(prev => ({ ...prev, [field]: value }))} />
+              <CategorySelect categories={categories} value={selectedCategoryId} onChange={setSelectedCategoryId} />
+              <MaterialItemFormFields values={values} onChange={(f, v) => setValues((prev) => ({ ...prev, [f]: v }))} />
             </Drawer.Body>
             <Drawer.Footer borderTopWidth="1px" gap={2}>
-              <UiButton
-                colorPalette="red"
-                variant="outline"
-                onClick={async () => {
-                  const ok = await showConfirmPrompt({ title: 'Delete material?', description: item.name });
-                  if (!ok) return;
-                  await deleteItem.mutateAsync({ categoryId, itemId: item.id });
-                  showSuccessToast('Material deleted');
-                  onClose();
-                }}
-              >
-                Delete
+              <UiButton colorPalette="red" variant="outline" onClick={handleDelete}>
+                {isBulk ? `Delete ${items.length} items` : 'Delete'}
               </UiButton>
-              <UiButton variant="ghost" onClick={onClose}>Cancel</UiButton>
-              <UiButton
-                onClick={() => onSave({
-                  ...item,
-                  name: values.name ?? '',
-                  productName: values.productName ?? '',
-                  url: values.url ?? '',
-                  cost: Number(values.cost) || 0,
-                  unit: values.unit ?? '',
-                  quantity: Number(values.quantity) || 0,
-                }, selectedCategoryId)}
-              >
-                Save
+              {!isBulk && <UiButton variant="ghost" onClick={onClose}>Cancel</UiButton>}
+              <UiButton onClick={handleSave}>
+                {isBulk ? `Save ${items.length} items` : 'Save'}
               </UiButton>
             </Drawer.Footer>
           </Drawer.Content>
