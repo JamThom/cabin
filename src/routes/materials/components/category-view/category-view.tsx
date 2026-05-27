@@ -23,9 +23,10 @@ export default function Category() {
       <MaterialsTable categoryId={category.id} items={category.items} onRowClick={(item) => setSelectedItem(item)} />
       <MaterialItemDrawer
         categoryId={category.id}
+        categories={categories}
         item={selectedItem}
         onClose={() => setSelectedItem(null)}
-        onSave={async (item) => {
+        onSave={async (item, targetCategoryId) => {
           await updateItem.mutateAsync({
             categoryId: category.id,
             itemId: item.id,
@@ -35,7 +36,7 @@ export default function Category() {
             cost: item.cost,
             unit: item.unit,
             quantity: item.quantity,
-            group: item.group ?? ''
+            targetCategoryId: targetCategoryId !== category.id ? targetCategoryId : undefined,
           });
           showSuccessToast('Material saved');
           setSelectedItem(null);

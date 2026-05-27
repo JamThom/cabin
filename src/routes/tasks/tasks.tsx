@@ -103,11 +103,11 @@ export default function Tasks() {
         }
       >
         {phases.map((phase) => {
-          const total = phase.tasks.reduce((sum, task) => sum + parseMoney(task.costEst), 0);
+          const outstanding = phase.tasks.filter((task) => task.status !== 'completed').length;
           return (
             <Tabs.Trigger key={phase.id} value={phase.id}>
               {phase.name}
-              <Badge ml={2} size="xs" colorPalette="purple" variant="subtle">{formatMoney(total)}</Badge>
+              {outstanding > 0 && <Badge ml={2} size="xs" colorPalette="purple" variant="subtle">{outstanding}</Badge>}
             </Tabs.Trigger>
           );
         })}

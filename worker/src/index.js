@@ -184,7 +184,7 @@ export default {
       const state = await getState(db);
       const category = state.categories.find(c => c.id === categoryId);
       if (!category) return json({ error: 'Not found' }, 404);
-      const item = { id: crypto_uuid(), name: 'New material', productName: '', url: '', cost: 0, unit: 'piece', quantity: 1, group: '' };
+      const item = { id: crypto_uuid(), name: 'New material', productName: '', url: '', cost: 0, unit: 'piece', quantity: 1 };
       category.items.push(item);
       await saveState(db, state);
       return json(item, 201);
@@ -194,7 +194,7 @@ export default {
     const itemsBulkPatch = pathname.match(/^\/api\/material-categories\/([^/]+)\/items$/);
     if (method === 'PATCH' && itemsBulkPatch) {
       const categoryId = itemsBulkPatch[1];
-      const updates = await request.json(); // [{ id, name, productName, url, cost, unit, quantity, group }]
+      const updates = await request.json(); // [{ id, name, productName, url, cost, unit, quantity }]
       const state = await getState(db);
       const category = state.categories.find(c => c.id === categoryId);
       if (!category) return json({ error: 'Not found' }, 404);
@@ -207,7 +207,6 @@ export default {
           cost: update.cost,
           unit: update.unit,
           quantity: update.quantity,
-          group: update.group ?? item.group ?? '',
         });
       }
       await saveState(db, state);
@@ -231,8 +230,13 @@ export default {
         cost: body.cost,
         unit: body.unit,
         quantity: body.quantity,
-        group: body.group ?? item.group ?? '',
       });
+      if (body.targetCategoryId && body.targetCategoryId !== categoryId) {
+        const targetCategory = state.categories.find(c => c.id === body.targetCategoryId);
+        if (!targetCategory) return json({ error: 'Target category not found' }, 404);
+        category.items = category.items.filter(i => i.id !== itemId);
+        targetCategory.items.push(item);
+      }
       await saveState(db, state);
       return json(item);
     }

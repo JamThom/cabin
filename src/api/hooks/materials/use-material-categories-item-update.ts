@@ -10,7 +10,7 @@ interface UpdateMaterialItemBody {
   cost: number;
   unit: string;
   quantity: number;
-  group: string;
+  targetCategoryId?: string;
 }
 
 export default function useMaterialCategoriesItemUpdate() {

@@ -1,4 +1,4 @@
-import { Badge, Text } from '@chakra-ui/react';
+import { Text } from '@chakra-ui/react';
 import { ColumnDef } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
 import UiTableCheckbox, { useRowSelection } from '@/ui/table/table-checkbox';
@@ -30,17 +30,6 @@ function UrlCell({ url }: { url: string }) {
       {display}
     </a>
   );
-}
-
-const GROUP_COLORS = ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'cyan', 'purple', 'pink'];
-
-function getGroupColor(group: string): string {
-  return GROUP_COLORS[group.charCodeAt(0) % GROUP_COLORS.length];
-}
-
-function GroupBadge({ group }: { group: string }) {
-  if (!group) return null;
-  return <Badge colorPalette={getGroupColor(group)} variant="subtle" size="sm">{group}</Badge>;
 }
 
 export default function MaterialsTable({ categoryId, items, onRowClick }: MaterialsTableProps) {
@@ -75,7 +64,6 @@ export default function MaterialsTable({ categoryId, items, onRowClick }: Materi
         ),
         cell: ({ row }) => <UiTableCheckbox row={row} setRowSelection={setRowSelection} />,
       },
-      { accessorKey: 'group', header: 'Group', cell: ({ row }) => <GroupBadge group={row.original.group} /> },
       { accessorKey: 'name', header: 'Name', cell: ({ row }) => row.original.name },
       { accessorKey: 'productName', header: 'Product Name', cell: ({ row }) => row.original.productName },
       { accessorKey: 'url', header: 'URL', cell: ({ row }) => <UrlCell url={row.original.url} /> },

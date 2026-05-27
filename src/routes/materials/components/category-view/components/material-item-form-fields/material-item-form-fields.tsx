@@ -7,7 +7,6 @@ export interface MaterialFormValues {
   cost: string | null;
   unit: string | null;
   quantity: string | null;
-  group: string | null;
 }
 
 interface Props {
@@ -48,13 +47,6 @@ export default function MaterialItemFormFields({ values, onChange }: Props) {
       </Field>
       <Field label="Quantity">
         <Input type="number" {...field(values, 'quantity')} onChange={(e) => onChange('quantity', e.target.value)} />
-      </Field>
-      <Field label="Group">
-        <Input
-          {...field(values, 'group')}
-          placeholder={values.group === null ? 'multiple' : 'e.g. Roof'}
-          onChange={(e) => onChange('group', e.target.value)}
-        />
       </Field>
     </Stack>
   );

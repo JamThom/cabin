@@ -9,7 +9,6 @@ export interface MaterialItem {
   cost: number;
   unit: string;
   quantity: number;
-  group: string;
 }
 
 export interface MaterialCategory {

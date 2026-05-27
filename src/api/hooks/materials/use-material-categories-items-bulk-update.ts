@@ -2,9 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import apiRequest from '../request';
 import { MaterialItem } from './use-material-categories';
 
-interface BulkUpdateItem extends Omit<MaterialItem, 'group'> {
-  group: string;
-}
+type BulkUpdateItem = MaterialItem;
 
 export default function useMaterialCategoriesItemsBulkUpdate() {
   const queryClient = useQueryClient();

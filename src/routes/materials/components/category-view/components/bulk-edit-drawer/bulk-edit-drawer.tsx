@@ -29,7 +29,6 @@ function initValues(items: MaterialItem[]): MaterialFormValues {
     cost: commonValue(items, 'cost'),
     unit: commonValue(items, 'unit'),
     quantity: commonValue(items, 'quantity'),
-    group: commonValue(items, 'group'),
   };
 }
 
@@ -55,7 +54,6 @@ export default function BulkEditDrawer({ categoryId, items, open, onClose }: Bul
         cost: values.cost !== null ? Number(values.cost) || 0 : item.cost,
         unit: values.unit !== null ? values.unit : item.unit,
         quantity: values.quantity !== null ? Number(values.quantity) || 0 : item.quantity,
-        group: values.group !== null ? values.group : (item.group ?? ''),
       })),
     });
     showSuccessToast(`${items.length} items saved`);
