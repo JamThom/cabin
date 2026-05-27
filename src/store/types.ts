@@ -6,6 +6,7 @@ export interface Task {
   status: Status;
   costEst: string;
   blockedBy?: string;
+  description?: string;
 }
 
 export interface Phase {

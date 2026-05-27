@@ -103,7 +103,7 @@ export default {
       const state = await getState(db);
       const phase = state.phases.find(p => p.id === phaseId);
       if (!phase) return json({ error: 'Not found' }, 404);
-      const task = { id: crypto_uuid(), name: 'New Task', status: 'to-do', costEst: '', blockedBy: '', subtasks: [] };
+      const task = { id: crypto_uuid(), name: 'New Task', status: 'to-do', costEst: '', blockedBy: '', description: '', subtasks: [] };
       phase.tasks.push(task);
       await saveState(db, state);
       return json(task, 201);
@@ -119,7 +119,7 @@ export default {
       if (!phase) return json({ error: 'Not found' }, 404);
       const task = phase.tasks.find(t => t.id === taskId);
       if (!task) return json({ error: 'Not found' }, 404);
-      Object.assign(task, { name: body.name, status: body.status, costEst: body.costEst, blockedBy: body.blockedBy });
+      Object.assign(task, { name: body.name, status: body.status, costEst: body.costEst, blockedBy: body.blockedBy, description: body.description ?? task.description ?? '' });
       await saveState(db, state);
       return json(task);
     }

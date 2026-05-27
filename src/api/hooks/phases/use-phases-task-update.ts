@@ -9,15 +9,16 @@ interface UpdateTaskBody {
   status: Status;
   costEst: string;
   blockedBy: string;
+  description: string;
 }
 
 export default function usePhasesTaskUpdate() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ phaseId, taskId, name, status, costEst, blockedBy }: UpdateTaskBody) =>
+    mutationFn: ({ phaseId, taskId, name, status, costEst, blockedBy, description }: UpdateTaskBody) =>
       apiRequest(`/api/phases/${phaseId}/tasks/${taskId}`, {
         method: 'PATCH',
-        body: JSON.stringify({ name, status, costEst, blockedBy })
+        body: JSON.stringify({ name, status, costEst, blockedBy, description })
       }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['phases'] })
   });

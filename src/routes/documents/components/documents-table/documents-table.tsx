@@ -7,6 +7,7 @@ import UiTable from '@/ui/table/table';
 import { DocumentFile, DocumentFolder } from '@/store/types';
 import { API_BASE_URL } from '@/api/hooks/request';
 import { useConfirmPrompt } from '@/ui/confirm-prompt/confirm-prompt-provider';
+import { formatDate } from '@/utils/format-date';
 
 interface DocRow {
   key: string;
@@ -139,7 +140,7 @@ export default function DocumentsTable({ folders, onFileClick, onFileInfo, onFil
       {
         accessorKey: 'modified',
         header: 'Modified',
-        cell: ({ row }) => row.original.modified || null
+        cell: ({ row }) => row.original.modified ? formatDate(row.original.modified) : null
       },
       {
         id: 'actions',

@@ -9,6 +9,7 @@ import {
   Portal,
   Stack,
   Text,
+  Textarea,
 } from "@chakra-ui/react";
 import UiButton from "@/ui/button/button";
 import { useNavigate, useParams } from "react-router-dom";
@@ -41,6 +42,7 @@ export default function TaskDrawer() {
   const [status, setStatus] = useState<Status>("to-do");
   const [costEst, setCostEst] = useState("");
   const [blockedBy, setBlockedBy] = useState("");
+  const [description, setDescription] = useState("");
 
   useEffect(() => {
     if (!task) return;
@@ -48,6 +50,7 @@ export default function TaskDrawer() {
     setStatus(task.status);
     setCostEst(task.costEst);
     setBlockedBy(task.blockedBy ?? "");
+    setDescription(task.description ?? "");
   }, [task]);
 
   function close() {
@@ -62,6 +65,7 @@ export default function TaskDrawer() {
       status,
       costEst,
       blockedBy,
+      description,
     });
     showSuccessToast("Task saved");
     close();
@@ -104,6 +108,17 @@ export default function TaskDrawer() {
                   <Input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                  />
+                </Box>
+                <Box>
+                  <Text fontSize="sm" fontWeight="medium" mb={1}>
+                    Description
+                  </Text>
+                  <Textarea
+                    placeholder="Add a description..."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={4}
                   />
                 </Box>
                 <Box>
