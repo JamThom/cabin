@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "node build.mjs",
-    "start": "node watch.mjs"
+    "start": "node watch.mjs",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev"
   },
   "keywords": [],
   "author": "",
@@ -31,7 +33,8 @@
     "@types/react-dom": "^19.2.3",
     "esbuild": "^0.28.0",
     "serve": "^14.2.6",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "wrangler": "^4.97.0"
   },
   "type": "module",
   "msw": {
