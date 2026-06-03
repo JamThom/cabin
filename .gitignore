@@ -3,3 +3,10 @@ public/bundle.js
 public/bundle.js.map
 dist/
 .DS_Store
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
