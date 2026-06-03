@@ -102,7 +102,7 @@ export default function Tasks() {
           />
         }
       >
-        {phases.map((phase) => {
+        {[...phases].sort((a, b) => a.name.localeCompare(b.name)).map((phase) => {
           const outstanding = phase.tasks.filter((task) => task.status !== 'completed').length;
           return (
             <Tabs.Trigger key={phase.id} value={phase.id}>

@@ -97,7 +97,7 @@ export default function Materials() {
           />
         }
       >
-        {categories.map((category) => {
+        {[...categories].sort((a, b) => a.name.localeCompare(b.name)).map((category) => {
           const total = category.items.reduce((sum, item) => sum + item.cost * item.quantity, 0);
           return (
             <Tabs.Trigger key={category.id} value={category.id}>
