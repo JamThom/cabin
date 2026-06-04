@@ -55,6 +55,16 @@ const config = defineConfig({
         '16': { value: '68px' },
       },
     },
+    slotRecipes: {
+      tabs: {
+        slots: ['trigger'],
+        base: {
+          trigger: {
+            minWidth: 'fit-content',
+          },
+        },
+      },
+    },
     recipes: {
       button: {
         base: {

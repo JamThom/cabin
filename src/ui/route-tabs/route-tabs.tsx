@@ -1,5 +1,5 @@
 import { Flex, Tabs } from '@chakra-ui/react';
-import { Children, cloneElement, isValidElement, ReactElement, ReactNode } from 'react';
+import { ReactNode } from 'react';
 
 type Props = {
   value: string | undefined;
@@ -9,10 +9,6 @@ type Props = {
 };
 
 export default function RouteTabs({ value, onValueChange, action, children }: Props) {
-  const tabs = Children.toArray(children)
-    .filter((child): child is ReactElement => isValidElement(child))
-    .map((child) => cloneElement(child, { ...child.props, minWidth: 'fit-content' }));
-
   return (
     <Flex align="center" justify="space-between" mb={6} gap={3}>
       <Tabs.Root
@@ -24,7 +20,7 @@ export default function RouteTabs({ value, onValueChange, action, children }: Pr
         colorPalette="teal"
         size="sm"
       >
-        <Tabs.List overflowX="auto">{tabs}</Tabs.List>
+        <Tabs.List overflowX="auto">{children}</Tabs.List>
       </Tabs.Root>
       {action}
     </Flex>
