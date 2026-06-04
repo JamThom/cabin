@@ -11,8 +11,12 @@ interface PhaseTasksTableProps {
 }
 
 export default function PhaseTasksTable({ tasks, onRowClick }: PhaseTasksTableProps) {
+  const statusOrder: Record<string, number> = { 'to-do': 0, 'in-progress': 1, blocked: 2, completed: 3 };
+
   const data = useMemo<Task[]>(
-    () => tasks.map((task) => ({ taskId: task.id, name: task.name, status: task.status, costEst: task.costEst, blockedBy: task.blockedBy, date: task.date })),
+    () => [...tasks]
+      .sort((a, b) => (statusOrder[a.status] ?? 99) - (statusOrder[b.status] ?? 99))
+      .map((task) => ({ taskId: task.id, name: task.name, status: task.status, costEst: task.costEst, blockedBy: task.blockedBy, date: task.date })),
     [tasks]
   );
 
