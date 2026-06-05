@@ -13,7 +13,7 @@ export default function AppShell() {
       flexDir={{ base: 'column-reverse', md: 'row' }}
     >
       <SideNav />
-      <Stack flex="1">
+      <Stack overflow="hidden" flex="1">
         <Outlet />
       </Stack>
     </Flex>
