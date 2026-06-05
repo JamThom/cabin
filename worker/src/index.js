@@ -296,6 +296,49 @@ export default {
       return noContent();
     }
 
+    // ── Control Plan ────────────────────────────────────────────────────────
+
+    // GET /api/control-plan
+    if (method === 'GET' && pathname === '/api/control-plan') {
+      const state = await getState(db);
+      return json(state.controlPlan ?? []);
+    }
+
+    // POST /api/control-plan
+    if (method === 'POST' && pathname === '/api/control-plan') {
+      const state = await getState(db);
+      if (!state.controlPlan) state.controlPlan = [];
+      const item = { id: crypto_uuid(), activity: '', requirement: '', performedBy: '', reportedAction: '', toKA: '', toBN: '', date: '', signature: '', note: '', translated: '' };
+      state.controlPlan.push(item);
+      await saveState(db, state);
+      return json(item, 201);
+    }
+
+    // PATCH /api/control-plan/:itemId
+    const controlPlanPatch = pathname.match(/^\/api\/control-plan\/([^/]+)$/);
+    if (method === 'PATCH' && controlPlanPatch) {
+      const itemId = controlPlanPatch[1];
+      const body = await request.json();
+      const state = await getState(db);
+      if (!state.controlPlan) state.controlPlan = [];
+      const item = state.controlPlan.find(i => i.id === itemId);
+      if (!item) return json({ error: 'Not found' }, 404);
+      Object.assign(item, body);
+      await saveState(db, state);
+      return json(item);
+    }
+
+    // DELETE /api/control-plan/:itemId
+    const controlPlanDelete = pathname.match(/^\/api\/control-plan\/([^/]+)$/);
+    if (method === 'DELETE' && controlPlanDelete) {
+      const itemId = controlPlanDelete[1];
+      const state = await getState(db);
+      if (!state.controlPlan) state.controlPlan = [];
+      state.controlPlan = state.controlPlan.filter(i => i.id !== itemId);
+      await saveState(db, state);
+      return noContent();
+    }
+
     // ── Documents ───────────────────────────────────────────────────────────
 
     // GET /api/documents

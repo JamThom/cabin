@@ -12,7 +12,8 @@ const navItems: NavItem[] = [
   { path: '/tasks', label: 'Tasks', icon: 'tasks' },
   { path: '/materials', label: 'Materials', icon: 'materials' },
   { path: '/documents', label: 'Documents', icon: 'documents' },
-  { path: '/notes', label: 'Notes', icon: 'notes' }
+  { path: '/notes', label: 'Notes', icon: 'notes' },
+  { path: '/control-plan', label: 'Control Plan', icon: 'control-plan' },
 ];
 
 export default function SideNav() {

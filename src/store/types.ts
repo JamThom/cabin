@@ -31,3 +31,17 @@ export interface DocumentFolder {
   parentDirectoryId?: string | null;
   files: DocumentFile[];
 }
+
+export interface ControlPlanItem {
+  id: string;
+  activity: string;
+  requirement: string;
+  performedBy: string;
+  reportedAction: string;
+  toKA: string;
+  toBN: string;
+  date: string;
+  signature: string;
+  note: string;
+  translated: string;
+}

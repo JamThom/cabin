@@ -12,6 +12,7 @@ import NoteDrawer from './routes/notes/components/note-drawer/note-drawer';
 import Tasks from './routes/tasks/tasks';
 import Phase from './routes/tasks/components/phase-view/phase-view';
 import TaskDrawer from './routes/tasks/components/phase-view/components/task-drawer/task-drawer';
+import ControlPlan from './routes/control-plan/control-plan';
 
 export default function App() {
   return (
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="notes" element={<Notes />}>
               <Route path=":noteId" element={<NoteDrawer />} />
             </Route>
+            <Route path="control-plan" element={<ControlPlan />} />
           </Route>
         </Routes>
       </BrowserRouter>

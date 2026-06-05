@@ -16,7 +16,7 @@ export default function PhaseTasksTable({ tasks, onRowClick }: PhaseTasksTablePr
   const data = useMemo<Task[]>(
     () => [...tasks]
       .sort((a, b) => (statusOrder[a.status] ?? 99) - (statusOrder[b.status] ?? 99))
-      .map((task) => ({ taskId: task.id, name: task.name, status: task.status, costEst: task.costEst, blockedBy: task.blockedBy, date: task.date })),
+      .map((task) => ({ ...task, taskId: task.id })),
     [tasks]
   );
 
