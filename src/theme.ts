@@ -74,6 +74,8 @@ const config = defineConfig({
         base: {
           trigger: {
             minWidth: 'fit-content',
+            flex: '1',
+            justifyContent: 'center',
           },
         },
       },
