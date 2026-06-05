@@ -12,10 +12,9 @@ interface ControlPlanTableProps {
 export default function ControlPlanTable({ items, onRowClick }: ControlPlanTableProps) {
   const columns = useMemo<ColumnDef<ControlPlanItem>[]>(
     () => [
-      { accessorKey: 'activity', header: 'Activity' },
-      { accessorKey: 'translated', header: 'Translated' },
+      { accessorKey: 'translated', header: 'Activity' },
       { accessorKey: 'requirement', header: 'Requirement' },
-      { accessorKey: 'date', header: 'Date', cell: ({ row }) => row.original.date ? formatDate(row.original.date) : null },
+      { accessorKey: 'date', header: 'Completed at', cell: ({ row }) => row.original.date ? formatDate(row.original.date) : null },
     ],
     []
   );

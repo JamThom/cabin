@@ -10,40 +10,32 @@ interface ControlPlanDrawerProps {
   onClose: () => void;
 }
 
-const FIELDS: { key: keyof Omit<ControlPlanItem, 'id'>; label: string; type?: string; multiline?: boolean }[] = [
-  { key: 'activity', label: 'Activity' },
-  { key: 'translated', label: 'Translated' },
+const READ_ONLY_FIELDS: { key: keyof ControlPlanItem; label: string }[] = [
+  { key: 'translated', label: 'Activity' },
+  { key: 'activity', label: 'Original (Swedish)' },
   { key: 'category', label: 'Category' },
   { key: 'requirement', label: 'Requirement' },
   { key: 'performedBy', label: 'Performed By' },
   { key: 'reportedAction', label: 'Reported Action' },
   { key: 'toKA', label: 'To KA' },
   { key: 'toBN', label: 'To BN' },
-  { key: 'date', label: 'Date', type: 'date' },
   { key: 'signature', label: 'Signature' },
-  { key: 'note', label: 'Note', multiline: true },
 ];
-
-type FormValues = Omit<ControlPlanItem, 'id'>;
-
-const empty: FormValues = {
-  activity: '', translated: '', category: '', requirement: '', performedBy: '',
-  reportedAction: '', toKA: '', toBN: '', date: '', signature: '', note: '',
-};
 
 export default function ControlPlanDrawer({ item, onClose }: ControlPlanDrawerProps) {
   const update = useControlPlanUpdate();
   const { showSuccessToast } = useUiToast();
-  const [values, setValues] = useState<FormValues>(empty);
+  const [date, setDate] = useState('');
+  const [note, setNote] = useState('');
 
   useEffect(() => {
     if (!item) return;
-    const { id: _id, ...rest } = item;
-    setValues(rest);
+    setDate(item.date ?? '');
+    setNote(item.note ?? '');
   }, [item]);
 
   async function handleSave() {
-    await update.mutateAsync({ id: item!.id, ...values });
+    await update.mutateAsync({ id: item!.id, date, note });
     showSuccessToast('Item saved');
     onClose();
   }
@@ -55,32 +47,28 @@ export default function ControlPlanDrawer({ item, onClose }: ControlPlanDrawerPr
         <Drawer.Positioner>
           <Drawer.Content>
             <Drawer.Header borderBottomWidth="1px">
-              <Drawer.Title>Edit Item</Drawer.Title>
+              <Drawer.Title>{item?.translated || 'Item'}</Drawer.Title>
               <Drawer.CloseTrigger asChild><CloseButton size="sm" /></Drawer.CloseTrigger>
             </Drawer.Header>
             <Drawer.Body pt={6}>
-              <Stack gap={5}>
-                {FIELDS.map(({ key, label, type, multiline }) => (
+              <Stack gap={4}>
+                {READ_ONLY_FIELDS.filter(({ key }) => item?.[key]).map(({ key, label }) => (
                   <Box key={key}>
-                    <Text fontSize="sm" fontWeight="medium" mb={1}>{label}</Text>
-                    {multiline ? (
-                      <Textarea
-                        value={values[key]}
-                        onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))}
-                        rows={3}
-                      />
-                    ) : (
-                      <Input
-                        type={type ?? 'text'}
-                        value={values[key]}
-                        onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))}
-                      />
-                    )}
+                    <Text fontSize="xs" color="fg.muted" mb={0.5}>{label}</Text>
+                    <Text fontSize="sm">{item?.[key]}</Text>
                   </Box>
                 ))}
+                <Box>
+                  <Text fontSize="sm" fontWeight="medium" mb={1}>Completed at</Text>
+                  <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                </Box>
+                <Box>
+                  <Text fontSize="sm" fontWeight="medium" mb={1}>Note</Text>
+                  <Textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} />
+                </Box>
               </Stack>
             </Drawer.Body>
-            <Drawer.Footer borderTopWidth="1px" gap={2}>
+            <Drawer.Footer borderTopWidth="1px">
               <UiButton onClick={handleSave}>Save</UiButton>
             </Drawer.Footer>
           </Drawer.Content>
