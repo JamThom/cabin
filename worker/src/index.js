@@ -28,14 +28,25 @@ function base64ToUint8(base64) {
   return bytes;
 }
 
+const CONTROL_PLAN_SEED = [
+  { activity: 'Planbestämmelser', translated: 'Planning regulations', category: '', requirement: 'PBL/Detaljplan', performedBy: 'SK A', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
+  { activity: 'Hygien, hälsa, miljö', translated: 'Hygiene, health, environment', category: '', requirement: 'BBR 6', performedBy: 'SK A', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
+  { activity: 'Konstruktionsdokumentation – Grundläggning, laster, bärförmåga, beständighet och dimensionering', translated: 'Structural documentation – Foundations, loads, load-bearing capacity, durability and dimensioning', category: '', requirement: 'EKS 12', performedBy: 'SK A', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
+];
+
 async function getState(db) {
   const row = await db.prepare('SELECT state FROM app_state WHERE id = 1').first();
   if (!row) {
-    const initial = { phases: [], categories: [], documentFolders: [], documentBlobById: {} };
+    const initial = { phases: [], categories: [], documentFolders: [], documentBlobById: {}, controlPlan: CONTROL_PLAN_SEED.map(item => ({ id: crypto_uuid(), ...item })) };
     await db.prepare("INSERT INTO app_state (id, state, updated_at) VALUES (1, ?, ?)").bind(JSON.stringify(initial), new Date().toISOString()).run();
     return initial;
   }
-  return JSON.parse(row.state);
+  const state = JSON.parse(row.state);
+  if (!state.controlPlan) {
+    state.controlPlan = CONTROL_PLAN_SEED.map(item => ({ id: crypto_uuid(), ...item }));
+    await saveState(db, state);
+  }
+  return state;
 }
 
 async function saveState(db, state) {
@@ -306,9 +317,10 @@ export default {
 
     // POST /api/control-plan
     if (method === 'POST' && pathname === '/api/control-plan') {
+      const body = request.headers.get('content-length') !== '0' ? await request.json().catch(() => ({})) : {};
       const state = await getState(db);
       if (!state.controlPlan) state.controlPlan = [];
-      const item = { id: crypto_uuid(), activity: '', requirement: '', performedBy: '', reportedAction: '', toKA: '', toBN: '', date: '', signature: '', note: '', translated: '' };
+      const item = { id: crypto_uuid(), activity: '', translated: '', category: '', requirement: '', performedBy: '', reportedAction: '', toKA: '', toBN: '', date: '', signature: '', note: '', ...body };
       state.controlPlan.push(item);
       await saveState(db, state);
       return json(item, 201);

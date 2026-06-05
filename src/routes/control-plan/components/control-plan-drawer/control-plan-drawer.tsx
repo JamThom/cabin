@@ -3,9 +3,7 @@ import { Box, CloseButton, Drawer, Input, Portal, Stack, Text, Textarea } from '
 import UiButton from '@/ui/button/button';
 import { ControlPlanItem } from '@/store/types';
 import useControlPlanUpdate from '@/api/hooks/control-plan/use-control-plan-update';
-import useControlPlanDelete from '@/api/hooks/control-plan/use-control-plan-delete';
 import useUiToast from '@/ui/toast/use-ui-toast';
-import { useConfirmPrompt } from '@/ui/confirm-prompt/confirm-prompt-provider';
 
 interface ControlPlanDrawerProps {
   item: ControlPlanItem | null;
@@ -14,29 +12,28 @@ interface ControlPlanDrawerProps {
 
 const FIELDS: { key: keyof Omit<ControlPlanItem, 'id'>; label: string; type?: string; multiline?: boolean }[] = [
   { key: 'activity', label: 'Activity' },
-  { key: 'requirement', label: 'Requirement', multiline: true },
+  { key: 'translated', label: 'Translated' },
+  { key: 'category', label: 'Category' },
+  { key: 'requirement', label: 'Requirement' },
   { key: 'performedBy', label: 'Performed By' },
-  { key: 'reportedAction', label: 'Reported Action', multiline: true },
+  { key: 'reportedAction', label: 'Reported Action' },
   { key: 'toKA', label: 'To KA' },
   { key: 'toBN', label: 'To BN' },
   { key: 'date', label: 'Date', type: 'date' },
   { key: 'signature', label: 'Signature' },
   { key: 'note', label: 'Note', multiline: true },
-  { key: 'translated', label: 'Translated', multiline: true },
 ];
 
 type FormValues = Omit<ControlPlanItem, 'id'>;
 
 const empty: FormValues = {
-  activity: '', requirement: '', performedBy: '', reportedAction: '',
-  toKA: '', toBN: '', date: '', signature: '', note: '', translated: '',
+  activity: '', translated: '', category: '', requirement: '', performedBy: '',
+  reportedAction: '', toKA: '', toBN: '', date: '', signature: '', note: '',
 };
 
 export default function ControlPlanDrawer({ item, onClose }: ControlPlanDrawerProps) {
   const update = useControlPlanUpdate();
-  const remove = useControlPlanDelete();
   const { showSuccessToast } = useUiToast();
-  const { showConfirmPrompt } = useConfirmPrompt();
   const [values, setValues] = useState<FormValues>(empty);
 
   useEffect(() => {
@@ -48,14 +45,6 @@ export default function ControlPlanDrawer({ item, onClose }: ControlPlanDrawerPr
   async function handleSave() {
     await update.mutateAsync({ id: item!.id, ...values });
     showSuccessToast('Item saved');
-    onClose();
-  }
-
-  async function handleDelete() {
-    const ok = await showConfirmPrompt({ title: 'Delete item?', description: item?.activity });
-    if (!ok) return;
-    await remove.mutateAsync(item!.id);
-    showSuccessToast('Item deleted');
     onClose();
   }
 
@@ -92,7 +81,6 @@ export default function ControlPlanDrawer({ item, onClose }: ControlPlanDrawerPr
               </Stack>
             </Drawer.Body>
             <Drawer.Footer borderTopWidth="1px" gap={2}>
-              <UiButton colorPalette="red" variant="outline" onClick={handleDelete}>Delete</UiButton>
               <UiButton onClick={handleSave}>Save</UiButton>
             </Drawer.Footer>
           </Drawer.Content>

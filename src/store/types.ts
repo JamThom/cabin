@@ -35,6 +35,8 @@ export interface DocumentFolder {
 export interface ControlPlanItem {
   id: string;
   activity: string;
+  translated: string;
+  category: string;
   requirement: string;
   performedBy: string;
   reportedAction: string;
@@ -43,5 +45,4 @@ export interface ControlPlanItem {
   date: string;
   signature: string;
   note: string;
-  translated: string;
 }

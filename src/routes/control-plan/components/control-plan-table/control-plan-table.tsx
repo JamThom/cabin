@@ -13,6 +13,8 @@ export default function ControlPlanTable({ items, onRowClick }: ControlPlanTable
   const columns = useMemo<ColumnDef<ControlPlanItem>[]>(
     () => [
       { accessorKey: 'activity', header: 'Activity' },
+      { accessorKey: 'translated', header: 'Translated' },
+      { accessorKey: 'category', header: 'Category' },
       { accessorKey: 'requirement', header: 'Requirement' },
       { accessorKey: 'performedBy', header: 'Performed By' },
       { accessorKey: 'reportedAction', header: 'Reported Action' },
@@ -21,7 +23,6 @@ export default function ControlPlanTable({ items, onRowClick }: ControlPlanTable
       { accessorKey: 'date', header: 'Date', cell: ({ row }) => row.original.date ? formatDate(row.original.date) : null },
       { accessorKey: 'signature', header: 'Signature' },
       { accessorKey: 'note', header: 'Note' },
-      { accessorKey: 'translated', header: 'Translated' },
     ],
     []
   );
