@@ -28,67 +28,14 @@ function base64ToUint8(base64) {
   return bytes;
 }
 
-const CONTROL_PLAN_VERSION = 2;
-
-const CONTROL_PLAN_SEED = [
-  { activity: 'Planbestämmelser', translated: 'Planning regulations', category: '', requirement: 'PBL/Detaljplan', performedBy: 'SK A', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Hygien, hälsa, miljö', translated: 'Hygiene, health, environment', category: '', requirement: 'BBR 6', performedBy: 'SK A', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Konstruktionsdokumentation – Grundläggning, laster, bärförmåga, beständighet och dimensionering', translated: 'Structural documentation – Foundations, loads, load-bearing capacity, durability and dimensioning', category: '', requirement: 'EKS 12', performedBy: 'SK A', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Brandskyddsbeskr har upprättats och följts i projekteringen', translated: 'Fire protection description has been established and followed in the project', category: '', requirement: 'BBR 5', performedBy: 'SK A', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Tillgänglighet', translated: 'Accessibility', category: '', requirement: 'BBR 3', performedBy: 'SK A', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Säkerhet vid användning', translated: 'Safety in use', category: '', requirement: 'BBR 8', performedBy: 'SK A', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Utstakaning', translated: 'Staking out', category: 'Bygg', requirement: 'Nybyggnadskarta', performedBy: 'TE', reportedAction: 'Intyg', toKA: 'X', toBN: '', date: '', signature: '', note: 'Mätning' },
-  { activity: 'Etablering', translated: 'Site establishment', category: 'Bygg', requirement: 'BBR 2:3, 2:4', performedBy: 'TE', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Kvalitetssäkring entreprenörer', translated: 'Quality assurance contractors', category: 'Bygg', requirement: '', performedBy: 'Alla E', reportedAction: 'Kval. Plan', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Hantering av farligt avfall', translated: 'Handling of hazardous waste', category: 'Bygg', requirement: 'SFS 2020:614', performedBy: 'TE', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Hantering av avfall för återvinning', translated: 'Handling of waste for recycling', category: 'Bygg', requirement: 'SFS 2020:614', performedBy: 'TE', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Hantering av övrigt avfall', translated: 'Handling of other waste', category: 'Bygg', requirement: 'SFS 2020:614', performedBy: 'TE', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Markarbeten', translated: 'Ground works', category: 'Bygg', requirement: 'BBR 2:4', performedBy: 'TE', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Grundbotten', translated: 'Foundation base', category: 'Bygg', requirement: 'Bygghandling', performedBy: 'TE', reportedAction: 'DE+Intyg', toKA: 'X', toBN: '', date: '', signature: '', note: 'Packningsprotokoll/Intyg' },
-  { activity: 'Dränering', translated: 'Drainage', category: 'Bygg', requirement: 'Bygghandling', performedBy: 'TE', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Dräneringslager', translated: 'Drainage layer', category: 'Bygg', requirement: 'Bygghandling', performedBy: 'TE', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Bottenplatta på plintar', translated: 'Ground slab on plinths', category: 'Bygg', requirement: 'Bygghandling', performedBy: 'TE', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Provtagningsgrupp/föroreningar i mark i samband med nya schakter', translated: 'Sampling/contamination in ground in connection with new excavations', category: 'Bygg', requirement: 'Bygghandling + SFS 1998:899, SFS 1998:808', performedBy: 'TE', reportedAction: 'Intyg/Anmälan', toKA: 'X', toBN: '', date: '', signature: '', note: 'Provtagningsprotokoll/Intyg. Vid förekomst av föroreningar i mark görs anmälan till Miljönämnden.' },
-  { activity: 'Material och produkter', translated: 'Materials and products', category: 'Bygg', requirement: 'BBR 2:1', performedBy: 'TE', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Skydd mot brandspridning mellan byggnader', translated: 'Protection against fire spread between buildings', category: 'Bygg', requirement: 'BBR 5:611', performedBy: 'TE', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Bärförmåga, stadga och beständighet', translated: 'Load-bearing capacity, stability and durability', category: 'Bygg', requirement: 'EKS 12', performedBy: 'TE', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Fast inredning och utrustning', translated: 'Fixed furnishings and equipment', category: 'Bygg', requirement: 'BBR 8:32', performedBy: 'TE', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Spisar, ugnar och dylikt', translated: 'Stoves, ovens and the like', category: 'Bygg', requirement: 'BBR 8:42', performedBy: 'TE', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Dagvattenhantering', translated: 'Stormwater management', category: 'Bygg', requirement: 'BBR 6:642', performedBy: 'TE', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Yttertak, anslutn, avvattning', translated: 'Roof, connections, drainage', category: 'Bygg', requirement: 'Bygghandl', performedBy: 'TE', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Ventilationsflöde', translated: 'Ventilation flow', category: 'Installationer', requirement: 'BBR 6:251', performedBy: 'VE', reportedAction: 'Protokoll', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Våtrum/tätskit, säker vatten inst.', translated: 'Wet rooms/sealing kit, safe water installation', category: 'Installationer', requirement: 'BBR 6:53', performedBy: 'VSE', reportedAction: 'DE+Intyg', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Installationer avloppsvatten', translated: 'Wastewater installations', category: 'Installationer', requirement: 'BBR 6:64', performedBy: 'VSE', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Injustering värmeanläggning', translated: 'Adjustment of heating system', category: 'Installationer', requirement: 'Bygghandl', performedBy: 'VSE', reportedAction: 'Protokoll', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Provtryckning vattenledningar', translated: 'Pressure testing of water pipes', category: 'Installationer', requirement: 'BBR 6:625', performedBy: 'VSE', reportedAction: 'DE+protok', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Installationer för tappvatten', translated: 'Domestic water installations', category: 'Installationer', requirement: 'BBR 6:621', performedBy: 'VSE', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Varmvattentemp', translated: 'Hot water temperature', category: 'Installationer', requirement: 'BBR 6:625', performedBy: 'VSE', reportedAction: 'Protokoll', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Elsäkerhetsintyg', translated: 'Electrical safety certificate', category: 'Installationer', requirement: 'BBR 8:8', performedBy: 'EE', reportedAction: 'DE+Intyg', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Brandvarnare', translated: 'Smoke alarm', category: 'Installationer', requirement: 'BBR 5:2513', performedBy: 'EE', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Lägesprotokoll', translated: 'Status report', category: 'Projektavslutning', requirement: '', performedBy: 'TE, SK', reportedAction: 'Intyg', toKA: 'X', toBN: '', date: '', signature: '', note: 'Utförs av cert. företag' },
-  { activity: 'Färdigställandeskydd', translated: 'Completion protection', category: 'Projektavslutning', requirement: 'SFS 2014:227', performedBy: 'BH', reportedAction: 'Försäkring', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Brandkontroll lmkanal och brandvarnare', translated: 'Fire inspection of flue channel and smoke alarm', category: 'Projektavslutning', requirement: 'BSD', performedBy: 'SK Br', reportedAction: 'Intyg', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Relationshandlingar (A,VS,VE,K)', translated: 'As-built documents (A,VS,VE,K)', category: 'Projektavslutning', requirement: '', performedBy: 'SK A', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'DU-instruktioner', translated: 'Operation and maintenance instructions', category: 'Projektavslutning', requirement: '', performedBy: 'Samtl E', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Intyg att bygghandlingar följts', translated: 'Certificate that construction documents were followed', category: 'Projektavslutning', requirement: 'Egenkontroll', performedBy: 'Samtl E', reportedAction: 'Intyg', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
-  { activity: 'Arbetet utfört enligt bygglov', translated: 'Work carried out according to building permit', category: 'Projektavslutning', requirement: 'Kontrollplan', performedBy: 'KA', reportedAction: 'Intyg', toKA: 'X', toBN: 'X', date: '', signature: '', note: 'Signerad k-plan till BN' },
-  { activity: 'Slutsamråd', translated: 'Final consultation', category: 'Projektavslutning', requirement: 'PBL', performedBy: 'KA+BN+BH+RE', reportedAction: 'Protokoll', toKA: 'X', toBN: '', date: '', signature: '', note: 'KA kallar' },
-];
-
 async function getState(db) {
   const row = await db.prepare('SELECT state FROM app_state WHERE id = 1').first();
   if (!row) {
-    const initial = { phases: [], categories: [], documentFolders: [], documentBlobById: {}, controlPlan: CONTROL_PLAN_SEED.map(item => ({ id: crypto_uuid(), ...item })) };
+    const initial = { phases: [], categories: [], documentFolders: [], documentBlobById: [], controlPlan: [] };
     await db.prepare("INSERT INTO app_state (id, state, updated_at) VALUES (1, ?, ?)").bind(JSON.stringify(initial), new Date().toISOString()).run();
     return initial;
   }
-  const state = JSON.parse(row.state);
-  if (!state.controlPlan || state.controlPlanVersion !== CONTROL_PLAN_VERSION) {
-    state.controlPlan = CONTROL_PLAN_SEED.map(item => ({ id: crypto_uuid(), ...item }));
-    state.controlPlanVersion = CONTROL_PLAN_VERSION;
-    await saveState(db, state);
-  }
-  return state;
+  return JSON.parse(row.state);
 }
 
 async function saveState(db, state) {
