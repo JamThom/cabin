@@ -72,10 +72,6 @@ const config = defineConfig({
       tabs: {
         slots: ['trigger', 'list'],
         base: {
-          list: {
-            borderBottom: '2px solid',
-            borderColor: 'border',
-          },
           trigger: {
             minWidth: 'fit-content',
             flex: '1',
@@ -83,7 +79,6 @@ const config = defineConfig({
             border: '0',
             borderBottom: '2px solid transparent',
             borderRadius: '0',
-            marginBottom: '-2px',
             _selected: {
               borderBottomColor: 'colorPalette.500',
               color: 'colorPalette.600',
@@ -93,7 +88,22 @@ const config = defineConfig({
         variants: {
           variant: {
             drawer: {
+              trigger: {
+                minWidth: 'fit-content',
+                flex: '1',
+                justifyContent: 'center',
+                border: '0',
+                borderBottom: '2px solid transparent',
+                borderRadius: '0',
+                marginBottom: '-2px',
+                _selected: {
+                  borderBottomColor: 'colorPalette.500',
+                  color: 'colorPalette.600',
+                },
+              },
               list: {
+                borderBottom: '2px solid',
+                borderColor: 'border',
                 mx: '-1.6rem',
                 px: '1.6rem',
               },
