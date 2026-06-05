@@ -14,15 +14,8 @@ export default function ControlPlanTable({ items, onRowClick }: ControlPlanTable
     () => [
       { accessorKey: 'activity', header: 'Activity' },
       { accessorKey: 'translated', header: 'Translated' },
-      { accessorKey: 'category', header: 'Category' },
       { accessorKey: 'requirement', header: 'Requirement' },
-      { accessorKey: 'performedBy', header: 'Performed By' },
-      { accessorKey: 'reportedAction', header: 'Reported Action' },
-      { accessorKey: 'toKA', header: 'To KA' },
-      { accessorKey: 'toBN', header: 'To BN' },
       { accessorKey: 'date', header: 'Date', cell: ({ row }) => row.original.date ? formatDate(row.original.date) : null },
-      { accessorKey: 'signature', header: 'Signature' },
-      { accessorKey: 'note', header: 'Note' },
     ],
     []
   );
