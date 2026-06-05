@@ -16,7 +16,7 @@ export default function RouteTabs({ value, onValueChange, action, children }: Pr
         flex="1"
         value={value}
         onValueChange={(event) => onValueChange(event.value)}
-        variant="outline"
+        variant="plain"
         colorPalette="teal"
         size="sm"
       >

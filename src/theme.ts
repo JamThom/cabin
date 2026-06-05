@@ -90,21 +90,6 @@ const config = defineConfig({
             },
           },
         },
-        variants: {
-          variant: {
-            outline: {
-              trigger: {
-                _selected: {
-                  borderTopColor: 'transparent',
-                  borderRightColor: 'transparent',
-                  borderLeftColor: 'transparent',
-                  borderBottomColor: 'colorPalette.500',
-                  color: 'colorPalette.600',
-                },
-              },
-            },
-          },
-        },
       },
     },
     recipes: {
