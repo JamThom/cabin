@@ -7,6 +7,19 @@ const config = defineConfig({
       bg: '#faf9fb',
       color: '#28262C',
     },
+    '.md-content h1, .md-content h2, .md-content h3, .md-content h4': {
+      fontWeight: 'semibold',
+      marginTop: '1em',
+      marginBottom: '0.25em',
+    },
+    '.md-content h1': { fontSize: '1.4em' },
+    '.md-content h2': { fontSize: '1.2em' },
+    '.md-content h3': { fontSize: '1.05em' },
+    '.md-content p': { marginBottom: '0.75em' },
+    '.md-content ul, .md-content ol': { paddingLeft: '1.5em', marginBottom: '0.75em' },
+    '.md-content li': { marginBottom: '0.25em' },
+    '.md-content strong': { fontWeight: 'semibold' },
+    '.md-content em': { fontStyle: 'italic' },
   },
   theme: {
     tokens: {

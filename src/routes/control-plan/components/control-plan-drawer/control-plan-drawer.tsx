@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, CloseButton, Drawer, Input, Portal, Stack, Tabs, Text, Textarea } from '@chakra-ui/react';
+import { marked } from 'marked';
 import UiButton from '@/ui/button/button';
 import { ControlPlanItem } from '@/store/types';
 import useControlPlanUpdate from '@/api/hooks/control-plan/use-control-plan-update';
@@ -56,7 +57,7 @@ export default function ControlPlanDrawer({ item, onClose }: ControlPlanDrawerPr
                   <Tabs.Trigger value="overview">Overview</Tabs.Trigger>
                   <Tabs.Trigger value="notes">Notes</Tabs.Trigger>
                 </Tabs.List>
-                <Tabs.Content value="overview" flex="1">
+                <Tabs.Content value="overview">
                   <Stack gap={4}>
                     {READ_ONLY_FIELDS.filter(({ key }) => item?.[key]).map(({ key, label }) => (
                       <Box key={key}>
@@ -68,15 +69,27 @@ export default function ControlPlanDrawer({ item, onClose }: ControlPlanDrawerPr
                       <Text fontSize="sm" fontWeight="medium" mb={1}>Completed at</Text>
                       <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
                     </Box>
+                    <Box>
+                      <Text fontSize="sm" fontWeight="medium" mb={1}>Note</Text>
+                      <Textarea
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                        rows={5}
+                        placeholder="Add notes..."
+                      />
+                    </Box>
                   </Stack>
                 </Tabs.Content>
-                <Tabs.Content value="notes" flex="1">
-                  <Textarea
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    rows={10}
-                    placeholder="Add notes..."
-                  />
+                <Tabs.Content value="notes">
+                  {note ? (
+                    <Box
+                      fontSize="sm"
+                      className="md-content"
+                      dangerouslySetInnerHTML={{ __html: marked(note) as string }}
+                    />
+                  ) : (
+                    <Text fontSize="sm" color="fg.muted">No notes yet.</Text>
+                  )}
                 </Tabs.Content>
               </Tabs.Root>
             </Drawer.Body>
