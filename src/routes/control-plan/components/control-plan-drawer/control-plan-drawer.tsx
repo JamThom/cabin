@@ -52,11 +52,22 @@ export default function ControlPlanDrawer({ item, onClose }: ControlPlanDrawerPr
               <Drawer.CloseTrigger asChild><CloseButton size="sm" /></Drawer.CloseTrigger>
             </Drawer.Header>
             <Drawer.Body pt={4} display="flex" flexDir="column">
-              <Tabs.Root defaultValue="overview" variant="outline" colorPalette="teal" size="sm" display="flex" flexDir="column" flex="1">
+              <Tabs.Root defaultValue="notes" variant="outline" colorPalette="teal" size="sm" display="flex" flexDir="column" flex="1">
                 <Tabs.List mb={4}>
-                  <Tabs.Trigger value="overview">Overview</Tabs.Trigger>
-                  <Tabs.Trigger value="notes">Notes</Tabs.Trigger>
+                  <Tabs.Trigger value="notes">Description</Tabs.Trigger>
+                  <Tabs.Trigger value="overview">Details</Tabs.Trigger>
                 </Tabs.List>
+                <Tabs.Content value="notes">
+                  {note ? (
+                    <Box
+                      fontSize="sm"
+                      className="md-content"
+                      dangerouslySetInnerHTML={{ __html: marked(note) as string }}
+                    />
+                  ) : (
+                    <Text fontSize="sm" color="fg.muted">No notes yet.</Text>
+                  )}
+                </Tabs.Content>
                 <Tabs.Content value="overview">
                   <Stack gap={4}>
                     {READ_ONLY_FIELDS.filter(({ key }) => item?.[key]).map(({ key, label }) => (
@@ -79,17 +90,6 @@ export default function ControlPlanDrawer({ item, onClose }: ControlPlanDrawerPr
                       />
                     </Box>
                   </Stack>
-                </Tabs.Content>
-                <Tabs.Content value="notes">
-                  {note ? (
-                    <Box
-                      fontSize="sm"
-                      className="md-content"
-                      dangerouslySetInnerHTML={{ __html: marked(note) as string }}
-                    />
-                  ) : (
-                    <Text fontSize="sm" color="fg.muted">No notes yet.</Text>
-                  )}
                 </Tabs.Content>
               </Tabs.Root>
             </Drawer.Body>
