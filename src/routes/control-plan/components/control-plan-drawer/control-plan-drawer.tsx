@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, CloseButton, Drawer, Input, Portal, Stack, Text, Textarea } from '@chakra-ui/react';
+import { Box, CloseButton, Drawer, Input, Portal, Stack, Tabs, Text, Textarea } from '@chakra-ui/react';
 import UiButton from '@/ui/button/button';
 import { ControlPlanItem } from '@/store/types';
 import useControlPlanUpdate from '@/api/hooks/control-plan/use-control-plan-update';
@@ -50,23 +50,35 @@ export default function ControlPlanDrawer({ item, onClose }: ControlPlanDrawerPr
               <Drawer.Title>{item?.translated || 'Item'}</Drawer.Title>
               <Drawer.CloseTrigger asChild><CloseButton size="sm" /></Drawer.CloseTrigger>
             </Drawer.Header>
-            <Drawer.Body pt={6}>
-              <Stack gap={4}>
-                {READ_ONLY_FIELDS.filter(({ key }) => item?.[key]).map(({ key, label }) => (
-                  <Box key={key}>
-                    <Text fontSize="xs" color="fg.muted" mb={0.5}>{label}</Text>
-                    <Text fontSize="sm">{item?.[key]}</Text>
-                  </Box>
-                ))}
-                <Box>
-                  <Text fontSize="sm" fontWeight="medium" mb={1}>Completed at</Text>
-                  <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-                </Box>
-                <Box>
-                  <Text fontSize="sm" fontWeight="medium" mb={1}>Note</Text>
-                  <Textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} />
-                </Box>
-              </Stack>
+            <Drawer.Body pt={4} display="flex" flexDir="column">
+              <Tabs.Root defaultValue="overview" variant="outline" colorPalette="teal" size="sm" display="flex" flexDir="column" flex="1">
+                <Tabs.List mb={4}>
+                  <Tabs.Trigger value="overview">Overview</Tabs.Trigger>
+                  <Tabs.Trigger value="notes">Notes</Tabs.Trigger>
+                </Tabs.List>
+                <Tabs.Content value="overview" flex="1">
+                  <Stack gap={4}>
+                    {READ_ONLY_FIELDS.filter(({ key }) => item?.[key]).map(({ key, label }) => (
+                      <Box key={key}>
+                        <Text fontSize="xs" color="fg.muted" mb={0.5}>{label}</Text>
+                        <Text fontSize="sm">{item?.[key]}</Text>
+                      </Box>
+                    ))}
+                    <Box>
+                      <Text fontSize="sm" fontWeight="medium" mb={1}>Completed at</Text>
+                      <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                    </Box>
+                  </Stack>
+                </Tabs.Content>
+                <Tabs.Content value="notes" flex="1">
+                  <Textarea
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    rows={10}
+                    placeholder="Add notes..."
+                  />
+                </Tabs.Content>
+              </Tabs.Root>
             </Drawer.Body>
             <Drawer.Footer borderTopWidth="1px">
               <UiButton onClick={handleSave}>Save</UiButton>
