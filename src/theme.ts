@@ -75,8 +75,8 @@ const config = defineConfig({
           list: {
             borderBottom: '2px solid',
             borderColor: 'border',
-            mx: '-1.8rem',
-            px: '1.8rem',
+            mx: '-1.7rem',
+            px: '1.7rem',
           },
           trigger: {
             minWidth: 'fit-content',
