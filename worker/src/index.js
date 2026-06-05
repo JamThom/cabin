@@ -28,6 +28,8 @@ function base64ToUint8(base64) {
   return bytes;
 }
 
+const CONTROL_PLAN_VERSION = 2;
+
 const CONTROL_PLAN_SEED = [
   { activity: 'Planbestämmelser', translated: 'Planning regulations', category: '', requirement: 'PBL/Detaljplan', performedBy: 'SK A', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
   { activity: 'Hygien, hälsa, miljö', translated: 'Hygiene, health, environment', category: '', requirement: 'BBR 6', performedBy: 'SK A', reportedAction: 'DE', toKA: 'X', toBN: '', date: '', signature: '', note: '' },
@@ -81,8 +83,9 @@ async function getState(db) {
     return initial;
   }
   const state = JSON.parse(row.state);
-  if (!state.controlPlan) {
+  if (!state.controlPlan || state.controlPlanVersion !== CONTROL_PLAN_VERSION) {
     state.controlPlan = CONTROL_PLAN_SEED.map(item => ({ id: crypto_uuid(), ...item }));
+    state.controlPlanVersion = CONTROL_PLAN_VERSION;
     await saveState(db, state);
   }
   return state;
