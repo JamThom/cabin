@@ -70,12 +70,24 @@ const config = defineConfig({
     },
     slotRecipes: {
       tabs: {
-        slots: ['trigger'],
+        slots: ['trigger', 'list'],
         base: {
+          list: {
+            borderBottom: '2px solid',
+            borderColor: 'border',
+          },
           trigger: {
             minWidth: 'fit-content',
             flex: '1',
             justifyContent: 'center',
+            border: '0',
+            borderBottom: '2px solid transparent',
+            borderRadius: '0',
+            marginBottom: '-2px',
+            _selected: {
+              borderBottomColor: 'colorPalette.500',
+              color: 'colorPalette.600',
+            },
           },
         },
       },
