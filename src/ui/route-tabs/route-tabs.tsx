@@ -17,7 +17,7 @@ export default function RouteTabs({ value, onValueChange, action, children }: Pr
         value={value}
         onValueChange={(event) => onValueChange(event.value)}
         variant="plain"
-        colorPalette="teal"
+        colorPalette="purple"
         size="sm"
       >
         <Tabs.List overflowX="auto">{children}</Tabs.List>

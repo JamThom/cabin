@@ -52,7 +52,7 @@ export default function ControlPlanDrawer({ item, onClose }: ControlPlanDrawerPr
               <Drawer.CloseTrigger asChild><CloseButton size="sm" /></Drawer.CloseTrigger>
             </Drawer.Header>
             <Drawer.Body pt={4} display="flex" flexDir="column">
-              <Tabs.Root defaultValue="notes" variant="plain" colorPalette="teal" size="sm" display="flex" flexDir="column" flex="1">
+              <Tabs.Root defaultValue="notes" variant="plain" colorPalette="purple" size="sm" display="flex" flexDir="column" flex="1">
                 <Tabs.List mb={4}>
                   <Tabs.Trigger value="notes">Description</Tabs.Trigger>
                   <Tabs.Trigger value="overview">Details</Tabs.Trigger>
