@@ -15,7 +15,7 @@ const config = defineConfig({
     '.md-content h1': { fontSize: '1.4em' },
     '.md-content h2': { fontSize: '1.2em' },
     '.md-content h3': { fontSize: '1.05em' },
-    '.md-content p': { marginBottom: '0.75em' },
+    '.md-content p': { marginBottom: '0.75em', lineHeight: '1.7' },
     '.md-content ul, .md-content ol': { paddingLeft: '1.5em', marginBottom: '0.75em' },
     '.md-content li': { marginBottom: '0.25em' },
     '.md-content strong': { fontWeight: 'semibold' },
