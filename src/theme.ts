@@ -75,8 +75,6 @@ const config = defineConfig({
           list: {
             borderBottom: '2px solid',
             borderColor: 'border',
-            mx: '-1.6rem',
-            px: '1.6rem',
           },
           trigger: {
             minWidth: 'fit-content',
@@ -89,6 +87,16 @@ const config = defineConfig({
             _selected: {
               borderBottomColor: 'colorPalette.500',
               color: 'colorPalette.600',
+            },
+          },
+        },
+        variants: {
+          variant: {
+            drawer: {
+              list: {
+                mx: '-1.6rem',
+                px: '1.6rem',
+              },
             },
           },
         },
