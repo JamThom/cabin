@@ -41,7 +41,7 @@ export default function UiTable<TData extends object>({
   });
 
   return (
-    <Box borderWidth="1px" boxShadow="lg" borderRadius="md" overflow="auto" maxH="calc(100vh - 260px)">
+    <Box borderWidth="1px" boxShadow="lg" borderRadius="md" overflow="auto" maxH="100%">
     <Table.Root size="sm" overflow="hidden">
       <Table.Header>
         {table.getHeaderGroups().map((headerGroup) => (

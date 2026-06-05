@@ -14,7 +14,12 @@ export default function ControlPlan() {
   return (
     <PageLayout>
       <PageHeader title="Control Plan" />
-      <Box borderWidth="1px" borderRadius="lg">
+      <Box borderWidth="1px" borderRadius="lg"
+        flex="1"
+        overflow="hidden"
+        padding="10px"
+        border="0"
+        margin="-10px">
         <ControlPlanTable
           items={items}
           onRowClick={(id) => setSelectedItem(items.find((i) => i.id === id) ?? null)}
